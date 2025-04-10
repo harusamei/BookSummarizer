@@ -1,0 +1,427 @@
+///////////////////////////////////////
+// prompts for book analysis tasks
+// 内容包括：书名，作者，写作背景，情节分析，人物及性格，主题与思想，写作风格，文学价值，经典场景，经典语录等
+///////////////////////////////////////
+
+<TASK: brief_intro>
+
+## **Task Overview**
+You are a seasoned literary analyst who has read all classic literary works. Given only the name of an author and one of their novels, use your expertise to craft a brief introduction to the novel. Your response should provide:
+- A brief biography of the author, including their literary achievements.
+- The historical and cultural background of the novel.
+- tagline for the novel.
+- A concise yet compelling summary of the story.
+- The main themes explored in the novel.
+- A list of the main characters, including their personalities, motivations, key actions, and relationships.
+
+### **Requirements**
+- The response should be no less than 1500 words in {language}.
+- Strictly follow the JSON format of output.
+
+### Input:
+Author: {author}
+Title: {title}
+
+### Output:
+```json
+{{
+  "title": "",               // The title of the novel.
+  "author": "",             // The name of the author.
+  "biography": "",           // A brief overview of the author's life, career, and notable works.
+  "background": "",          // The historical and cultural context of the novel.
+  "tagline": "",            // A catchy tagline that encapsulates the essence of the novel.
+  "themes": "",             // The main themes explored in the novel.
+  "summary": "",             // A succinct yet engaging summary of the novel.
+  "characters": [
+    {{
+      "name": "",            // The name of the character.
+      "description": ""      // A brief description of the character's personality, motivations, and key actions.
+    }},
+    {{
+      ... // Description for each main character.
+    }}  
+  ] 
+}}
+
+```
+</TASK>
+//小说中具有重要意义的场景
+<TASK: key_scenes>
+## **Task Overview**
+You are a seasoned literary analyst who has read all classic literary works. Your task is to identify and describe the most important scenes in a given novel. Each scene should be:
+- Memorable and impactful within the story.
+- Crucial to the plot, character development, or thematic expression—such as major conflicts, emotional turning points, or decisive actions.
+
+### Requirements:
+- Include at least 10 key scenes.
+- Strictly follow the JSON format of output.
+- Use {language} for the output.
+
+### Input:
+Title: {title}
+Author: {author}
+
+### Output:
+```json
+{{
+  "title": "",           // The title of the novel.
+  "scenes": [
+    {{
+      "scene_number": 1,
+      "slugline": "",     // A short title or description of the scene.
+      "description": ""   // A detailed explanation of the scene's content and significance.
+    }},
+    {{
+      "scene_number": 2,
+      "slugline": "",   
+      "description": ""   
+    }},
+    ... // At least 10 scenes
+  ]
+}}
+
+``` 
+</TASK>
+// optional tasks
+<TASK: quotes>
+# **Comprehensive and Detailed Novel Introduction**  
+
+## **Task Overview**
+You are a seasoned literary analyst who has read all classic literary works. Your task is to curate notable quotes from a given novel. Each selected quote should be:
+- Memorable, impactful, or thought-provoking.
+- Reflective of the novel’s themes, characters, or key moments.
+- Accompanied by its context or significance.
+
+### Requirements:
+- Provide at least 10 significant quotes.
+- Strictly follow the JSON format of output.
+- Use {language} for the output.
+
+### Input:
+Title: {title}
+Author: {author}
+
+### Output:
+```json
+{{
+  "title": "",               // The title of the novel.
+  "quotes": [
+    {{
+      "quote": "",           // The selected quote from the novel.
+      "context": ""          // The context or significance of the quote.
+    }},
+    {{
+      ... // Collection of notable quotes from the novel.
+    }}
+  ]
+}}
+```
+</TASK>
+
+////////////////////////////////////////////////////
+// plot analysis tasks
+<TASK: long_intro_1>  
+# **Comprehensive and Detailed Novel Introduction**  
+
+## **Task Overview**
+You are an expert literary analyst with extensive knowledge of classic literature. Your task is to provide a structured plot analysis, revealing character development, psychological depth, and thematic significance.
+
+### Analysis Guidelines:
+- Break down key elements: exposition, rising action, climax, falling action, and resolution.
+- Examine how these elements shape characters, themes, and the novel’s impact.
+- Explore subplots, narrative techniques, and unique storytelling methods.
+- Create a compelling title that reflects the essence of the analysis.
+
+### Requirements:
+- At least 1500 words of comprehensive discussion.
+- Strictly follow the JSON format of output.
+- Use {language} for the output.
+
+### Input
+```json
+{book_info}
+```
+
+### Output
+```json
+{{
+  "plot_title": "",      // A captivating title summarizing the plot.
+  "plot_analysis": ""  // A detailed introduction covering key events, twists, and turning points.
+}}
+```
+
+</TASK>
+
+// character analysis tasks
+<TASK: long_intro_2>
+# **Comprehensive and Detailed Novel Introduction**  
+
+## **Task Overview**
+You are a seasoned literary analyst with expertise in classic literature. Your task is to provide **a detailed character analysis** based on the given book information, highlighting key traits and developments to engage readers.
+
+### **Character Analysis (At Least 1,500 characters)**
+You have already completed the author’s biography, novel background, and plot analysis. Now, focus on analyzing the main characters, Your analysis should include:
+- A description of each character's personality, motivations, and key traits. you'd better provide some notable quotes or actions that reveal the characters' depth and complexity.
+- An exploration of the relationships between characters and how they influence the plot.
+- An evaluation of the characters' development throughout the story.
+- A concise and engaging title summarizing each character’s fate.
+
+### **Requirements**
+- Minimum 1,500 characters with substantial detail.
+- The response must be in Chinese.
+- Strictly follow the JSON format provided below.
+
+### **Input**
+```json
+{book_info}
+```
+
+### **Output**
+```json
+{{
+  "character_summary": "",        // A concise and engaging title summarizing the character’s fate.
+  "characters": ""    // A detailed character analysis, including personality, motivations, and key traits.
+}}
+
+</TASK>
+
+// key scenes analysis
+<TASK: long_intro_3>
+# **Comprehensive and Detailed Novel Introduction**  
+
+## **Task Overview**
+You are a seasoned literary analyst with expertise in classic literature. Having completed the author’s biography, novel background, and plot analysis, your next task is to identify and describe the most important scenes in a given novel. Each scene should be:
+- Memorable and impactful within the story.
+- Crucial to the plot, character development, or thematic expression—such as major conflicts, emotional turning points, or decisive actions.
+
+### **Scene Analysis Framework**
+Each scene should highlight important emotional, narrative, and thematic moments. Address the following points:
+- What happens: Summarize the scene briefly and clearly.
+- Why it matters: Explain its role in the story structure (e.g., climax, turning point) and how it advances the plot.
+- Character insight: Analyze character actions, dialogue, and inner thoughts. Show how the scene reveals motivations or changes in relationships.
+- Thematic connection: Show how the scene reflects the novel’s core themes (e.g., love, justice, sacrifice).
+- Narrative style: Examine the author’s techniques—language, symbolism, perspective, pacing, and rhetorical devices.
+- Emotional and symbolic impact: Describe its emotional effect on readers and explore any symbolic meanings.
+- Wrap-up: Conclude with one sentence explaining why the scene is iconic.
+
+### **Requirements**
+- Include at least 10 key scenes.
+- The response must be in Chinese.
+- Strictly follow the JSON format below.
+
+### **Input**
+```json
+{book_info}
+```
+
+### **Output**
+```json
+{{
+  "scene_summary": "",  // A concise title summarizing the analysis.
+  "scenes": [
+    {{
+      "slugline": "",     // A short title or description of the scene.
+      "description": ""   // A full analysis following the guideline above.
+    }},
+    ...  // at least 10 key scenes.
+  ]        
+}}  
+```
+</TASK>
+
+// literary value tasks
+<TASK: long_intro_4>
+# **Comprehensive and Detailed Novel Introduction**
+
+## **Task Overview**
+As a literary critic with deep expertise in classic literature, your task is to analyze the literary value of the provided book. Your analysis should cover its literary significance, social impact, and relevance to contemporary society.
+
+### **Analysis Requirements**
+
+- Summary of Literary Value: Briefly summarize the novel's literary significance.
+- Impact on Literature and Society: Discuss how the novel has influenced literature, philosophy, or society. Include whether it's regarded as a classic, its impact on future writers, and its influence on social movements.
+- Relevance Today: Discuss the novel's relevance to modern readers and its reflection on contemporary issues.
+Relevance Today: Analyze the novel's relevance to modern readers and its reflection on contemporary issues.
+- Reading Value: Explain why the novel is worth reading and provide recommendations.
+- Similar Works: Recommend 3 to 5 similar works or authors.
+
+### **Output Format**:
+- The response should be no less than 1500 characters in Chinese.
+- Strictly follow the JSON format of output.
+
+### **Input**
+```json
+{book_info}
+```
+
+### **Output**
+```json
+{{
+  "significance": "",
+  "reception_and_impact": "",
+  "relevance_today": "",
+  "reading_value": "",
+  "similar_works": [
+    {{
+      "title": "",
+      "author": ""
+    }},
+    {{
+      // Similar works or authors
+    }}
+  ]
+}}
+
+```
+</TASK>
+
+// writing style, and symbolism tasks
+<TASK: long_intro_5>
+# **Comprehensive and Detailed Novel Introduction**
+
+## **In-Depth Analysis of Writing Style and Symbolism**
+As a seasoned literary critic, you’ve already completed the character analysis, plot summary, and literary significance of the novel. Now, your task is to deepen the reader’s understanding by exploring the author’s writing style and the novel’s symbolism—revealing its deeper meaning and artistic power. 
+
+### **Analysis Guidelines**
+- Writing Style: Discuss the author's narrative techniques, tone and mood, and use of literary devices. Explain how these elements shape the plot and character development.
+
+- Symbolism: Identify key symbols and motifs. Explain what they represent, how they recur throughout the story, and how they contribute to the novel’s themes and character arcs.
+  Example: In The Great Gatsby, the green light symbolizes Gatsby’s longing for Daisy and the future, while also representing the elusive American Dream. Its repeated appearance strengthens the novel’s themes of hope, illusion, and disillusionment.              
+
+### **Requirements**
+- The output must be in Chinese and at least 1,500 characters long.  
+- Strictly follow the JSON output format below.  
+
+### **Input**
+```json
+{book_info}
+```
+### **Output**
+```json
+{{
+  "title": "",            // The title of the novel.  
+  "write_style": "",      // Analysis of writing style, narrative techniques, and literary devices.  
+  "symbols": [
+    {{
+      "symbol": "",        // Key symbols or motifs in the novel.  
+      "description": ""    // Explanation of their significance and contribution to themes.  
+    }},
+    {{
+      ... // Additional symbols or motifs.
+    }}
+  ]    
+}}  
+
+```
+</TASK>
+
+<TASK: book_introduction>
+# **Readable and Thoughtful Novel Introduction**
+You are a literary analyst with deep expertise in classic literature. Based on the provided book information, write an elegant, coherent, and thoughtful introduction to the novel.
+
+Your writing should unfold in smooth, well-structured paragraphs that guide the reader naturally through the historical and cultural context, the plot, character development, major themes, writing style, and critical reception. Avoid using bullet points or numbered lists. Instead, present the content in a flowing narrative style that feels insightful and enjoyable to read.
+
+## Requirements:
+- Write in Chinese
+- Style should be polished, logical, and reader-friendly—suitable for literary reviews, longform essays, or blog articles
+- All elements in the input (plot, characters, scenes, etc.) must be fully covered and appropriately expanded
+- The text should be at least 2000 Chinese characters
+- Use Markdown format for structure and readability
+
+### Input:
+```json
+{book_info}
+```
+
+### Output:
+  Please format your response in Markdown.
+
+</TASK>
+
+// B站视频脚本
+<TASK: b_video_script>
+# **Novel Video Script for a Bilibili Audience (with Transitions)**
+
+You are a skilled content creator who specializes in producing engaging literature-themed videos for Bilibili. Based on the book information provided, your task is to craft a narration script that vividly presents the essence and charm of the novel—drawing the viewer into the story and sparking their desire to read it.
+
+The script should use a narrative, emotionally resonant tone. Avoid academic or list-like formats. Instead, guide the viewer through the content using storytelling, rhetorical questions, vivid metaphors, and transitions that feel natural in spoken Chinese. The goal is to create an immersive experience—as if you’re talking directly to the viewer about a book you deeply love.
+
+### **Tone & Style Guidelines**
+- Speak like a passionate reader recommending a favorite novel
+- Make the pacing suitable for voiceover, with natural pauses and rhythm
+- Include transitional phrases between sections to enhance flow, such as:
+  “说到这里，你也许会好奇……”
+  “但这本书真正打动人的地方，其实还不止于此。”
+  “接下来，我们聊聊人物。”
+  “故事的精彩之处，才刚刚开始。”
+  “而当我们翻到最后一页……”
+  “现在你可能已经能感受到，这本书为什么值得一读。”
+- Close with a reflective or emotionally resonant ending that encourages action or leaves a thought-provoking impression
+
+### **Requirements**
+- The script must be written in Chinese
+- Style should suit spoken narration for video
+- Avoid bullet points or numbered lists; use natural storytelling paragraphs
+- Include: historical/cultural context, plot overview, characters, themes, style, critical reception, and reasons to recommend the book
+- Minimum length: 3000 Chinese characters
+- Format the output in Markdown
+
+### Input:
+```json
+{book_info}
+```
+
+### Output:
+Please format your response in Markdown.
+
+</TASK>
+
+<TASK: b_video_script_2>
+# **B站文学类视频脚本生成器（加强故事线、控制节奏、画面切换辅助）**
+
+你是一位擅长为B站制作文学内容视频的脚本创作者。请根据提供的书籍信息，撰写一篇风格生动、以故事为主线的视频旁白脚本。你的目标是用讲故事的方式，把一本小说的魅力展现出来，引发观众的情感共鸣与阅读兴趣。
+
+这不只是介绍书，而是像在对观众讲述一个私藏故事，娓娓道来，引人入胜。
+
+---
+
+### **语气与风格要求**
+- 语气自然亲切，像朋友推荐一本心头好
+- 避免条列式罗列，要有节奏感与情绪波动
+- 使用设问、比喻、铺垫、情绪起伏等叙述手法
+- 每个自然转场处，请加入一行说明**画面切换建议**，例如：
+  - 【画面切换：插入主人公独行雨夜的插画，配低音BGM淡入】
+  - 【字幕加粗：“故事的高潮，其实才刚刚开始。”】
+  - 【慢镜头＋氛围光变暗，进入情感转折段落】
+  - 【切入书籍封面+豆瓣短评截图，营造真实感】
+  - 【以纸页翻动声淡出，结束】
+
+---
+
+### **结构与内容比例**
+请注意内容节奏，避免内容结构失衡：
+- **故事梗概为重点（不少于整体的40%）**，具体生动、引导代入感
+- **人物介绍简明扼要**，只提关键性格和作用，避免冗长分析
+- **背景、风格、主题、推荐理由**等穿插式呈现，不宜集中堆砌
+- 最后以情绪收尾，引导观众留言/点赞/阅读
+
+---
+
+### **格式要求**
+- 脚本语言为中文，适合中文配音朗读
+- 避免使用项目符号或条列清单
+- 保持自然分段，每段字数适中，利于剪辑与配音
+- 脚本总字数不少于3000字
+- 使用 **Markdown** 格式输出
+- **每段切换处，请加一句【画面切换：XXX】提示**
+
+---
+
+### 输入：
+```json
+{book_info}
+```
+
+### 输出：
+// Markdown 格式输出完整视频旁白脚本，并在适当位置添加画面提示。
+</TASK>
