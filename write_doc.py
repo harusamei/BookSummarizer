@@ -1,9 +1,5 @@
 from docx import Document
 
-def write_to_json(file_path, abook):
-    with open(file_path, 'w',encoding='utf-8') as f:
-        jsonStr = json.dumps(abook, ensure_ascii=False, indent=4)
-        f.write(jsonStr)     
 
 def write_to_word(file_path, abook):
     document = Document()

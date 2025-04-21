@@ -1,0 +1,364 @@
+///////////////////////////////////////
+// prompts for book analysis tasks
+// 内容包括：书名，作者，写作背景，情节分析，人物及性格，主题与思想，写作风格，文学价值，经典场景，经典语录等
+///////////////////////////////////////
+
+<TASK: brief_intro>
+
+## **Task Overview**
+You are a seasoned literary analyst who has read all classic literary works. Given only the name of an author and one of their novels, use your expertise to craft a brief introduction to the novel. Your response should provide:
+- A brief biography of the author, including their literary achievements.
+- The historical and cultural background of the novel.
+- tagline for the novel.
+- A concise yet compelling summary of the story.
+- The main themes explored in the novel.
+- A list of the main characters, including their personalities, motivations, key actions, and relationships.
+
+### **Requirements**
+- The response should be no less than 1500 words in {language}.
+- Strictly follow the JSON format of output.
+
+### Input:
+Author: {author}
+Title: {title}
+
+### Output:
+```json
+{{
+  "title": "",               // The title of the novel.
+  "author": "",             // The name of the author.
+  "biography": "",           // A brief overview of the author's life, career, and notable works.
+  "background": "",          // The historical and cultural context of the novel.
+  "tagline": "",            // A catchy tagline that encapsulates the essence of the novel.
+  "themes": "",             // The main themes explored in the novel.
+  "summary": "",             // A succinct yet engaging summary of the novel.
+  "characters": [
+    {{
+      "name": "",            // The name of the character.
+      "description": ""      // A brief description of the character's personality, motivations, and key actions.
+    }},
+    {{
+      ... // Description for each main character.
+    }}  
+  ] 
+}}
+
+```
+</TASK>
+//小说中具有重要意义的场景
+<TASK: key_scenes>
+## **Task Overview**
+You are a seasoned literary analyst who has read all classic literary works. Your task is to identify and describe the most important scenes in a given novel. Each scene should be:
+- Memorable and impactful within the story.
+- Crucial to the plot, character development, or thematic expression—such as major conflicts, emotional turning points, or decisive actions.
+
+### Requirements:
+- Include at least 10 key scenes.
+- Strictly follow the JSON format of output.
+- Use {language} for the output.
+
+### Input:
+Title: {title}
+Author: {author}
+
+### Output:
+```json
+{{
+  "title": "",           // The title of the novel.
+  "scenes": [
+    {{
+      "scene_number": 1,
+      "slugline": "",     // A short title or description of the scene.
+      "description": ""   // A detailed explanation of the scene's content and significance.
+    }},
+    {{
+      "scene_number": 2,
+      "slugline": "",   
+      "description": ""   
+    }},
+    ... // At least 10 scenes
+  ]
+}}
+
+``` 
+</TASK>
+
+// 生成导读
+<TASK: book_introduction>
+# **Readable and Thoughtful Novel Introduction**
+You are a literary analyst with deep expertise in classic literature. Based on the provided book information, write an elegant, coherent, and thoughtful introduction to the novel.
+Your writing should unfold in smooth, well-structured paragraphs that guide the reader naturally through the historical and cultural context, the plot, character development, major themes, writing style, and critical reception. Avoid using bullet points or numbered lists. Instead, present the content in a flowing narrative style that feels insightful and enjoyable to read.
+
+## Requirements:
+- Write in Chinese
+- Style should be polished, logical, and reader-friendly—suitable for literary reviews, longform essays, or blog articles
+- All elements in the input (plot, characters, scenes, etc.) must be fully covered and appropriately expanded
+- The text should be at least 2000 Chinese characters
+- Use Markdown format for structure and readability
+
+### Input:
+```json
+{book_info}
+```
+
+### Output:
+  Please format your response in Markdown.
+
+</TASK>
+
+// 生成B站视频脚本, 根据video_structure, 文字版本导读
+<TASK: b_video_script>
+# **Bilibili Literary Video Script Generator (Story-Focused with Visual Cues)**
+
+You are a scriptwriter who specializes in creating engaging, story-driven literary content for Bilibili videos. Based on the 视频结构和文字版的书籍导读, write a vivid and emotionally resonant voiceover script that captures the essence of the novel through storytelling.
+
+This isn’t just a book summary—it should feel like sharing a personal, beloved story with the audience, drawing them in naturally.
+
+---
+
+### **Tone & Style**
+- Friendly and conversational, like recommending a favorite book to a friend
+- Avoid list-like summaries; aim for rhythm and emotional shifts
+- Use storytelling techniques: questions, metaphors, buildup, emotional arcs
+- Add simple visual direction cues where appropriate
+- No fixed format—visual cues should support emotional pacing
+
+---
+
+### **Structure & Balance**
+Maintain a well-paced structure:
+- Story summary should be at least 40% of the script, immersive and engaging
+- Character descriptions should be brief, focusing only on key traits and roles
+- Background, style, themes, and recommendations should be interwoven naturally
+- End with emotional resonance and a call to engage (comments/likes/reading)
+
+---
+
+### **Format**
+- Script language: Chinese (for voiceover narration)
+- No bullet points or itemized lists
+- Use natural paragraph breaks for smooth editing and narration
+- Minimum length: 3000 Chinese characters
+- Format output in Markdown
+
+---
+
+### Input
+**** Video Structure and Script Suggestions (JSON format)
+```json
+{vid_stru}
+```
+*** Written Guide of the Book
+{std_txt}
+
+
+### Output
+    A complete Markdown voiceover script with embedded visual cues. Do not wrap the script in code blocks.
+
+</TASK>
+
+// 将专业的书评改写为导读
+<TASK: intro_rewrite>
+# **Book Introduction Rewrite Task**
+You are a content writer for a literature-focused mobile app. Your job is to rewrite formal book reviews into engaging, easy-to-read book guides for general readers.
+
+You will be given two types of input:  
+1. A **formal literary review or introduction** (this is your main source).  
+2. The book’s **basic information** (use this as supporting reference).
+
+Your task is to create a **book guide of around 2,000 Chinese characters**, introducing the book’s background, core themes, main content, and reading value. The goal is to make the book feel approachable and appealing to everyday readers.
+
+This guide should be optimized for mobile reading.
+
+### Requirements
+
+**Tone & Style:**  
+Write in a warm, conversational tone—like you're recommending a great book to a friend. Avoid academic or overly formal language.
+
+**Length & Structure:**  
+Keep the entire article within ~2,000 characters. Use short, clear paragraphs that are easy to browse.  
+Include a title and subheadings. Use smooth transitions between sections.  
+Do **not** use bullet points or numbered lists.
+
+**Rewriting Notes:**  
+Do not copy or paraphrase long passages from the original review. Instead, reorganize the content into a more accessible and reader-friendly format.
+
+### Input
+*** Formal review or introduction text
+{intro_txt}
+
+*** Basic book information (JSON format)
+```json
+{book_info}
+```
+
+### Output
+Please format your response in Markdown.
+</TASK>
+
+// Video Structure and Script Suggestions (with Shot Descriptions)
+<TASK:video_structure>
+# **Video Structure for Book Introduction**
+You are a Bilibili video creator specializing in book introductions. You’ll be given two inputs:
+- A written book guide (main source)
+- Basic book information (for reference)
+
+Your task is to design a full 10-minute video structure and script outline that engages viewers and encourages them to read the book.
+
+### Deliverables
+Based on the inputs, create a complete video structure including:
+- Duration of each section
+- Key content points
+- Visual style
+- Shot descriptions
+- Music suggestions
+    
+### Guidelines
+- Output in Chinese
+- Match the visual style with the book’s theme and tone
+- Ensure smooth flow and transitions
+- Total video length: around 10 minutes
+- No host or presenter should appear in any shots
+- Include multiple shot suggestions per section:
+    - 1 minute: at least 6 shots
+    - 2 minutes: at least 12 shots
+    - And so on
+- Format output strictly in the JSON structure as shown in the example
+
+### Input
+- Written Guide of the Book
+{std_txt}
+
+- Basic Book Information (in JSON format)
+```json
+{book_info}
+```
+
+### Output Example
+```json
+{{
+  "video_structure": [
+    {{
+      "section": "",            // title of the section
+      "duration": 1,            // duration in minutes
+      "content_points": "",     
+      "visual_style": "",       
+      "music_suggestion": "",   
+      "shots": [                // shot descriptions
+        "...",
+        // ... more shot suggestions
+      ]
+    }},
+    {{
+        // ... more sections
+    }}
+  ]
+}}
+
+```json
+
+</TASK>
+
+<TASK: visual_desc>
+# ** Image and Video Descriptions for Generation **
+
+You are a skilled and professional visual designer. Your task is to generate detailed image and video descriptions for each shot in a video script structured in JSON format. These descriptions will be used for text-to-image generation and static-image-to-video generation.
+
+### Task Description
+- For each shot, write a highly detailed image description to guide text-to-image generation.
+- Based on the section content and image description, create a corresponding video description to support image-to-video generation.
+
+### Guidelines
+- Carefully consider the visual style and tone of each section to ensure the generated visuals match the intended aesthetic.
+- Every shot in the script must have a matching image and video description—complete coverage is required.
+- Use clear and consistent phrasing for composition to maintain visual coherence and avoid jarring transitions.
+- Use techniques like reusable core phrases, style anchoring, and camera language continuity to ensure stylistic and logical consistency.
+
+#### Image Description Guidelines:
+- Descriptions should be suitable for tools like DALL·E, serving as prompts for text-to-image generation.
+- Avoid vague or abstract language.
+- Be as specific and detailed as possible. Include: scene setup, character appearance, clothing, facial expression, pose, background elements, lighting, and color tone.
+- Use clear, imperative instructions, e.g.:
+  - “Generate an image of a character standing in a specific pose...”
+  - “The background shows a peaceful natural landscape...”
+  - “The character wears a particular style of clothing...”
+  - “Use warm and soft tones to render the scene...”
+
+#### Video Description Guidelines:
+- Descriptions should be suitable for tools like Runway Gen-2.
+- Incorporate various elements to guide video generation, such as:
+  - **Camera Motion**, **Environmental Motion**, **Time or Mood Shift**, **Narrative/Action Prompts**, and **Style/Texture**.
+
+- Output must strictly follow the JSON format below:
+
+### Input:
+*** Video Structure Script (JSON format) ***
+```json
+{vid_stru}
+```
+
+### Output:
+```json
+{{
+  "shots": [
+    {{
+      "image_number": 1,
+      "image_description": "",  // Description for text-to-image generation
+      "video_description": ""   // Description for image-to-video generation
+    }},
+    {{
+      // ... Continue for each shot
+    }}
+  ]
+}}
+```
+
+</TASK>
+
+<TASK: b_video_rewrite>
+# **Bilibili Book Recommendation Video Script Rewrite (Enhance Storytelling, Pacing, and Visual Flow)**
+
+You are a content creator on Bilibili who makes book recommendation videos. Your task is to rewrite a formal book review into a lively, story-driven script that feels personal and emotionally engaging. The goal is to present the book in a way that draws viewers into its world and makes them want to read it.
+
+---
+
+## **Tone and Style Guidelines**
+- Keep the tone friendly and conversational, as if you're recommending a favorite book to a friend
+- Avoid listing points—use smooth, emotional storytelling instead
+- Use rhetorical questions, metaphors, mood shifts, and dramatic build-ups to keep the flow dynamic
+- Add simple visual direction cues at natural transitions, such as:
+    - Scene illustrations that match the mood
+    - Music changes (e.g. soft piano for reflection, suspenseful beats for tension)
+    - Text highlights or bold subtitles for impact
+    - Book cover close-ups, key quotes, or user comments for depth
+    - Ambient effects like slow motion, color filters, or audio cues (paper flipping, silence, rain, etc.)
+- No fixed template—just ensure each cue enhances the emotional flow
+
+---
+
+## **Structure and Content Balance**
+- Storytelling should take up at least 40% of the script—make it vivid and immersive
+- Character intros should be brief, only covering essentials
+- Themes and background should be blended naturally into the narrative
+- End with a touching or thoughtful conclusion that encourages engagement
+
+---
+
+## **Formatting Requirements**
+- Script must be in Chinese, suitable for voice-over
+- Avoid list formats—use natural paragraph breaks for smooth dubbing and editing
+- Minimum length: 3000 characters
+- Use Markdown, and include one visual cue line per paragraph transition, like 【画面切换：XXX】
+
+---
+
+## **Input:**
+{book_info}
+
+---
+
+## **Output:**
+A full-length Chinese script for a Bilibili video, with visual cues at each transition.
+
+</TASK>
+
