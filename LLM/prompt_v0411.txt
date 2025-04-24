@@ -13,6 +13,7 @@ You are a seasoned literary analyst who has read all classic literary works. Giv
 - A concise yet compelling summary of the story.
 - The main themes explored in the novel.
 - A list of the main characters, including their personalities, motivations, key actions, and relationships.
+- A list of similar recommendations for further reading.
 
 ### **Requirements**
 - The response should be no less than 1500 words in {language}.
@@ -40,7 +41,16 @@ Title: {title}
     {{
       ... // Description for each main character.
     }}  
-  ] 
+  ],
+  'similar_recommendations': [
+    {{
+      "title": "",           // Title of a similar book.
+      "author": ""           // Author of the similar book.
+    }},
+    {{
+      ... // Similar recommendations
+    }}
+  ]
 }}
 
 ```
@@ -89,7 +99,7 @@ Author: {author}
 You are a literary analyst with deep expertise in classic literature. Based on the provided book information, write an elegant, coherent, and thoughtful introduction to the novel.
 Your writing should unfold in smooth, well-structured paragraphs that guide the reader naturally through the historical and cultural context, the plot, character development, major themes, writing style, and critical reception. Avoid using bullet points or numbered lists. Instead, present the content in a flowing narrative style that feels insightful and enjoyable to read.
 
-## Requirements:
+### Requirements:
 - Write in Chinese
 - Style should be polished, logical, and reader-friendly—suitable for literary reviews, longform essays, or blog articles
 - All elements in the input (plot, characters, scenes, etc.) must be fully covered and appropriately expanded
@@ -106,40 +116,350 @@ Your writing should unfold in smooth, well-structured paragraphs that guide the 
 
 </TASK>
 
-// 生成B站视频脚本, 根据video_structure, 文字版本导读
+// video structure for Bilibili book introduction
+<TASK:video_structure1>
+# **Book Introduction Video Structure**
+
+You are a Bilibili creator who specializes in producing book introduction videos. You will be provided with two types of input:
+- A written book guide (the main source)
+- Basic book information (for reference only)
+
+Your task is to adapt the written book guide into a complete 10-minute video structure, which will serve as the basis for a video that introduces the book to viewers in an engaging visual format.
+
+### Deliverables
+Design a full video structure including:
+- Duration for each section (in minutes)
+- Key content points
+- Visual style prompts
+- Visuals
+- Music suggestions
+    
+### Guidelines
+- The total video duration should be approximately 10 minutes
+- Visual style prompts should match the book’s tone and themes, and follow a descriptive format, e.g.: Vintage cinematic style, sepia tones, 1930s European interior, warm lighting, nostalgic atmosphere
+- Ensure smooth pacing and logical transitions between sections
+- Output must strictly follow the JSON format of the output example below
+
+--- 
+
+### Input
+- Written Book Guide:
+{std_txt}
+
+- Basic Book Information (in JSON format)
+```json
+{book_info}
+```
+
+### Output Example
+```json
+{{
+  "video_structure": [
+    {{
+      "section": "",          // section title 
+      "duration": 1,          // duration in minutes
+      "content": "",          // main content in the section
+      "visual_style": "",     // visual style prompts
+      "music_suggestion": "",
+      "visuals": ""           // visuals for the section      
+    }},
+    {{
+        // ... Additional sections
+    }}
+  ]
+}}
+
+```json
+
+</TASK>
+
+// Video Structure and Script Suggestions (with Shot Descriptions)
+<TASK:video_structure>
+# **Book Introduction Video Structure**
+
+You are a Bilibili creator who specializes in producing book introduction videos. You will be provided with two types of input:
+- A written book guide (the main source)
+- Basic book information (for reference only)
+
+Your task is to adapt the written book guide into a complete 10-minute video structure, which will serve as the basis for a video that introduces the book to viewers in an engaging visual format.
+
+### Deliverables
+Design a full video structure including:
+- Duration for each section (in minutes)
+- Key content points
+- Visual style prompts
+- Image anchor
+- Shot descriptions
+- Music suggestions
+    
+### Guidelines
+- The total video duration should be approximately 10 minutes
+- Each section must include at least 10 individual shots
+- Visual style prompts should match the book’s tone and themes, and follow a descriptive format, e.g.: Vintage cinematic style, sepia tones, 1930s European interior, warm lighting, nostalgic atmosphere
+- The Image Anchor should provide a highly detailed visual reference for stylistic consistency
+- The following are **prohibited**:
+  - No real-life actors or on-screen hosts
+  - No text-only screens — avoid slides resembling PowerPoint-style title cards (e.g., a solid background with only a sentence like “xxx”)
+  - No subtitles or text overlays
+  - No account promotions or subscription reminders
+- Ensure smooth pacing and logical transitions between sections
+- Output must strictly follow the JSON format of the output example below
+
+--- 
+
+### Input
+- Written Book Guide:
+{std_txt}
+
+- Basic Book Information (in JSON format)
+```json
+{book_info}
+```
+
+### Output Example
+```json
+{{
+  "video_structure": [
+    {{
+      "section": "",            
+      "duration": 1,           // duration in minutes
+      "main_content": "",      // main content in the section
+      "visual_style": "",      
+      "music_suggestion": "",
+      "image_anchor": "",       
+      "shots": [                
+        "...",  // shot descriptions
+        "...",
+        // At least 10 individual shots
+      ]
+    }},
+    {{
+        // ... Additional sections
+    }}
+  ]
+}}
+
+```json
+
+</TASK>
+
+<TASK: visual_desc1>
+
+# Static Image and Video Prompt Generation
+
+You are a professional visual designer specializing in short video aesthetics for Bilibili. 给定一个视频结构，你的任务是设计shots, 并为每个shot生成precise visual prompts. These prompts will be used to create high-quality static images and dynamic video sequences.
+
+## Task Description
+- 为输入的section设计 {count} 个shots.
+- Write a detailed static image description for each shot.
+- Provide a motion content prompt to animate each image.
+
+## Guidelines
+- 根据content和visuals来设计shots.
+- Follow the `visual_style` to ensure aesthetic consistency.
+- Every shot must include both image and motion prompts.
+- Reuse previous descriptions if visually similar to maintain coherence.
+- Apply consistent phrasing for composition and camera direction.
+
+## Static Image Description Rules
+
+- For use with text-to-image tools like DALL·E.
+- Neutral, high-resolution composition (no exaggerated angles or action).
+- Include:
+  - Visual_style
+  - Scene layout
+  - Character appearance and clothing
+  - Facial expression and body posture
+  - Background elements
+  - Lighting and color tone
+- The following are **prohibited**:
+  - No real-life actors or on-screen hosts
+  - No text-only screens — avoid slides resembling PowerPoint-style title cards (e.g., a solid background with only a sentence like “xxx”)
+  - No subtitles or text overlays
+  - No account promotions or subscription reminders
+
+- Use clear directives like:
+  - "Generate an image of a character standing..."
+  - "The background shows..."
+  - "The character wears..."
+
+## Motion Prompt Rules
+
+- Designed for tools like Runway Gen-2.
+- Include:
+  - Camera movement: dolly-in, slow pan, orbit shot
+  - Motion type and speed: cinematic slow-mo, fast-paced
+  - Ambient motion: wind, fog, drifting clouds
+  - Mood or time changes: dawn, dusk, emotional shifts
+  - Character actions: turning, walking, reaching
+  - Effects: flickering light, moving fabric, hair swaying
+
+## Output Requirements
+
+- Output must be in Chinese.
+- Strictly follow the JSON format provided below
+
+### Input:
+*** Video Structure Script (JSON format) ***
+```json
+{vid_stru}
+```
+
+### Output:
+```json
+{{
+  "shots": [
+    {{
+      "shot_number": 1,
+      "shot_title": "",  // Title or description of the shot
+      "image_description": "",  // Description for text-to-image generation
+      "motion_prompt": ""   // prompt to animate static image
+    }},
+    {{
+      // ... Continue for each shot
+    }}
+  ]
+}}
+```
+
+</TASK>
+
+<TASK: visual_desc>
+
+# Static Image and Video Prompt Generation
+
+You are a professional visual designer specializing in short video aesthetics for Bilibili. Given a script for a book-themed show, your task is to generate precise visual prompts for each shot. These prompts will be used to create high-quality static images and dynamic video sequences.
+
+## Task Description
+
+- Write a detailed static image description for each shot.
+- Provide a motion content prompt to animate each image.
+
+## Guidelines
+
+- Follow the `visual_style` to ensure aesthetic consistency.
+- Every shot must include both image and motion prompts.
+- Reuse previous descriptions if visually similar to maintain coherence.
+- Apply consistent phrasing for composition and camera direction.
+
+## Static Image Description Rules
+
+- For use with text-to-image tools like DALL·E.
+- Neutral, high-resolution composition (no exaggerated angles or action).
+- Include:
+  - Visual_style
+  - Scene layout
+  - Character appearance and clothing
+  - Facial expression and body posture
+  - Background elements
+  - Lighting and color tone
+
+- Use clear directives like:
+  - "Generate an image of a character standing..."
+  - "The background shows..."
+  - "The character wears..."
+
+## Motion Prompt Rules
+
+- Designed for tools like Runway Gen-2.
+- Include:
+  - Camera movement: dolly-in, slow pan, orbit shot
+  - Motion type and speed: cinematic slow-mo, fast-paced
+  - Ambient motion: wind, fog, drifting clouds
+  - Mood or time changes: dawn, dusk, emotional shifts
+  - Character actions: turning, walking, reaching
+  - Effects: flickering light, moving fabric, hair swaying
+
+## Output Requirements
+
+- Output must be in Chinese.
+- Strictly follow the JSON format provided below
+
+### Input:
+*** Video Structure Script (JSON format) ***
+```json
+{vid_stru}
+```
+
+### Output:
+```json
+{{
+  "shots": [
+    {{
+      "shot_number": 1,
+      "image_description": "",  // Description for text-to-image generation
+      "motion_prompt": ""   // prompt to animate static image
+    }},
+    {{
+      // ... Continue for each shot
+    }}
+  ]
+}}
+```
+
+</TASK>
+
+<TASK: reused_image>
+# ** Group Reusable Images **
+Based on the input shot descriptions, group visually identical or highly similar shots together. The goal is to reuse the same generated image across multiple shots to improve efficiency.
+
+### Requirements
+- Group shots only by the overall scene description. Do not analyze specific elements like lighting, objects, characters, camera angles, or subtitles.
+- Only output groups where image reuse is possible. Do not include shots that have no reusable images.
+- Output must strictly follow the specified JSON format.
+
+### **Input**
+- A JSON list of shot descriptions:
+```json
+{img_desc}
+```
+
+### **Output**
+```json
+{{
+  "reused_images": [
+    {{
+      "group": 1,  // Group number for reused image
+      "image_description": "",  // Description used for image generation
+      "shots": [1, 2, 3]   // Shot numbers that can share this image
+    }},
+    {{
+      // … More groups in the same format
+    }}
+  ]
+}}
+```
+</TASK>
+
+// Generate Bilibili Video Voiceover Script Based on Video Structure and Written Book Guide
 <TASK: b_video_script>
-# **Bilibili Literary Video Script Generator (Story-Focused with Visual Cues)**
+# **Bilibili Literary Video Script Generator**
+You are a scriptwriter creating voiceover narration for a Bilibili book review video. Based on a written guide of the book and a predefined video structure, write a Chinese voiceover script to match the video content.
 
-You are a scriptwriter who specializes in creating engaging, story-driven literary content for Bilibili videos. Based on the 视频结构和文字版的书籍导读, write a vivid and emotionally resonant voiceover script that captures the essence of the novel through storytelling.
+---
 
-This isn’t just a book summary—it should feel like sharing a personal, beloved story with the audience, drawing them in naturally.
+### **Requirements**
+- Total duration: about 10 minutes; total word count: around 2000 Chinese characters.
+- Each section in the video structure must have a corresponding voiceover.
+- Match the narration length and content to each section's duration.
+- Use the written guide as source material.
+- Output should include section titles and narration for each.
 
 ---
 
 ### **Tone & Style**
-- Friendly and conversational, like recommending a favorite book to a friend
-- Avoid list-like summaries; aim for rhythm and emotional shifts
-- Use storytelling techniques: questions, metaphors, buildup, emotional arcs
-- Add simple visual direction cues where appropriate
-- No fixed format—visual cues should support emotional pacing
-
----
-
-### **Structure & Balance**
-Maintain a well-paced structure:
-- Story summary should be at least 40% of the script, immersive and engaging
-- Character descriptions should be brief, focusing only on key traits and roles
-- Background, style, themes, and recommendations should be interwoven naturally
-- End with emotional resonance and a call to engage (comments/likes/reading)
+- Friendly, conversational—like recommending a favorite book to a friend.
+- Avoid dry summaries; create rhythm and emotional variation.
+- Use storytelling techniques: questions, metaphors, narrative buildup, emotional turns.
 
 ---
 
 ### **Format**
-- Script language: Chinese (for voiceover narration)
-- No bullet points or itemized lists
-- Use natural paragraph breaks for smooth editing and narration
-- Minimum length: 3000 Chinese characters
-- Format output in Markdown
+- Language: Chinese (for voiceover)
+- No bullet points or lists
+- Use paragraph breaks for smoother narration and editing
+- Minimum: 2000 Chinese characters
+- Output in Markdown format (no code blocks)
 
 ---
 
@@ -151,9 +471,10 @@ Maintain a well-paced structure:
 *** Written Guide of the Book
 {std_txt}
 
+---
 
 ### Output
-    A complete Markdown voiceover script with embedded visual cues. Do not wrap the script in code blocks.
+   A full Markdown-formatted Chinese voiceover script, with section titles and matching narration. 
 
 </TASK>
 
@@ -196,124 +517,6 @@ Do not copy or paraphrase long passages from the original review. Instead, reorg
 Please format your response in Markdown.
 </TASK>
 
-// Video Structure and Script Suggestions (with Shot Descriptions)
-<TASK:video_structure>
-# **Video Structure for Book Introduction**
-You are a Bilibili video creator specializing in book introductions. You’ll be given two inputs:
-- A written book guide (main source)
-- Basic book information (for reference)
-
-Your task is to design a full 10-minute video structure and script outline that engages viewers and encourages them to read the book.
-
-### Deliverables
-Based on the inputs, create a complete video structure including:
-- Duration of each section
-- Key content points
-- Visual style
-- Shot descriptions
-- Music suggestions
-    
-### Guidelines
-- Output in Chinese
-- Match the visual style with the book’s theme and tone
-- Ensure smooth flow and transitions
-- Total video length: around 10 minutes
-- No host or presenter should appear in any shots
-- Include multiple shot suggestions per section:
-    - 1 minute: at least 6 shots
-    - 2 minutes: at least 12 shots
-    - And so on
-- Format output strictly in the JSON structure as shown in the example
-
-### Input
-- Written Guide of the Book
-{std_txt}
-
-- Basic Book Information (in JSON format)
-```json
-{book_info}
-```
-
-### Output Example
-```json
-{{
-  "video_structure": [
-    {{
-      "section": "",            // title of the section
-      "duration": 1,            // duration in minutes
-      "content_points": "",     
-      "visual_style": "",       
-      "music_suggestion": "",   
-      "shots": [                // shot descriptions
-        "...",
-        // ... more shot suggestions
-      ]
-    }},
-    {{
-        // ... more sections
-    }}
-  ]
-}}
-
-```json
-
-</TASK>
-
-<TASK: visual_desc>
-# ** Image and Video Descriptions for Generation **
-
-You are a skilled and professional visual designer. Your task is to generate detailed image and video descriptions for each shot in a video script structured in JSON format. These descriptions will be used for text-to-image generation and static-image-to-video generation.
-
-### Task Description
-- For each shot, write a highly detailed image description to guide text-to-image generation.
-- Based on the section content and image description, create a corresponding video description to support image-to-video generation.
-
-### Guidelines
-- Carefully consider the visual style and tone of each section to ensure the generated visuals match the intended aesthetic.
-- Every shot in the script must have a matching image and video description—complete coverage is required.
-- Use clear and consistent phrasing for composition to maintain visual coherence and avoid jarring transitions.
-- Use techniques like reusable core phrases, style anchoring, and camera language continuity to ensure stylistic and logical consistency.
-
-#### Image Description Guidelines:
-- Descriptions should be suitable for tools like DALL·E, serving as prompts for text-to-image generation.
-- Avoid vague or abstract language.
-- Be as specific and detailed as possible. Include: scene setup, character appearance, clothing, facial expression, pose, background elements, lighting, and color tone.
-- Use clear, imperative instructions, e.g.:
-  - “Generate an image of a character standing in a specific pose...”
-  - “The background shows a peaceful natural landscape...”
-  - “The character wears a particular style of clothing...”
-  - “Use warm and soft tones to render the scene...”
-
-#### Video Description Guidelines:
-- Descriptions should be suitable for tools like Runway Gen-2.
-- Incorporate various elements to guide video generation, such as:
-  - **Camera Motion**, **Environmental Motion**, **Time or Mood Shift**, **Narrative/Action Prompts**, and **Style/Texture**.
-
-- Output must strictly follow the JSON format below:
-
-### Input:
-*** Video Structure Script (JSON format) ***
-```json
-{vid_stru}
-```
-
-### Output:
-```json
-{{
-  "shots": [
-    {{
-      "image_number": 1,
-      "image_description": "",  // Description for text-to-image generation
-      "video_description": ""   // Description for image-to-video generation
-    }},
-    {{
-      // ... Continue for each shot
-    }}
-  ]
-}}
-```
-
-</TASK>
 
 <TASK: b_video_rewrite>
 # **Bilibili Book Recommendation Video Script Rewrite (Enhance Storytelling, Pacing, and Visual Flow)**

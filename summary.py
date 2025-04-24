@@ -5,6 +5,7 @@ import os
 import asyncio
 import json
 import pandas as pd
+import copy
 from LLM.prompt_loader1 import Prompt_generator
 from LLM.llm_agent import LLMAgent
 from LLM.ans_extractor import AnsExtractor
@@ -27,7 +28,8 @@ class BookSummary:
             'videoScript': '_bv.md',    # B站风视频脚本
             'visualDesc': '_desc.json',    # 图像，视频描述
             'official': '_intro.txt',      # 官方或书籍序言
-            'videoStructure': '_vid.json'  # 视频结构
+            'videoStructure': '_vid.json',  # 视频结构
+            'reused': '_reuse.json'  # 重用的内容
         }
 
     async def gen_batch(self, xls_file):
@@ -49,24 +51,25 @@ class BookSummary:
             if hasIntroduction.lower() == 'y':
                 hasIntroduction = True
            
-            print(f'author: {author}, title: {title}')
-            await self.gen_bookInfo(title, author, book_dir)
-            print('part 1: generate book summarization')
-            # 有人工写的导读
-            if hasWritten is True:
-                print(f"Book {title} already has a human-written.")
-            elif hasIntroduction is True:   # 书籍序言或专业导读
-                print(f"Book {title} already has an official introduction .")
-                await self.rewrite_intro(title, author, book_dir)
-            else:
-                await self.gen_introduction(title, author, book_dir)
+            # print(f'author: {author}, title: {title}')
+            # await self.gen_bookInfo(title, author, book_dir)
+            # print('part 1: generate book summarization')
+            # # 有人工写的导读
+            # if hasWritten is True:
+            #     print(f"Book {title} already has a human-written.")
+            # elif hasIntroduction is True:   # 书籍序言或专业导读
+            #     print(f"Book {title} already has an official introduction .")
+            #     await self.rewrite_intro(title, author, book_dir)
+            # else:
+            #     await self.gen_introduction(title, author, book_dir)
         
             print('part 2: generate visual content')
-            await self.gen_videoStructure(title, book_dir)
+            # await self.gen_videoStructure(title, book_dir)
             await self.gen_visualDesc(title, book_dir)
             
-            print('part 3: generate video script')
-            await self.gen_videoScript(title, author, book_dir)
+            # print('part 3: generate voiceover script')
+            # await self.gen_videoScript(title, author, book_dir)
+            break
     
     # 输出json 存放在book_dir 目录下
     async def gen_bookInfo(self, title, author, book_dir):
@@ -138,13 +141,14 @@ class BookSummary:
 
         return True
     
-    # TODO 0418
+    # B站视频脚本
     async def gen_videoScript(self, title, author, book_dir):
         
         tmpl = self.prompter.tasks['b_video_script']
         ext = self.exts['videoStructure']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
             vid = json.load(f)
+        
         vid_stru = json.dumps(vid, ensure_ascii=False, indent=4)
         ext = self.exts['introduction']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
@@ -160,7 +164,7 @@ class BookSummary:
     async def gen_videoStructure(self, title, book_dir):
         print(f"gen_videoStructure for {title}")
 
-        tmpl = self.prompter.tasks['video_structure']
+        tmpl = self.prompter.tasks['video_structure1']
         ext = self.exts['bookInfo']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
             abook = json.load(f)
@@ -176,7 +180,7 @@ class BookSummary:
             return False
         query = tmpl.format(std_txt=intro_txt, book_info=bookInfo)
         asw = await self.llm.ask_llm(query, '')
-        result = self.ans_extr.output_extr('video_structure', asw)
+        result = self.ans_extr.output_extr('video_structure1', asw)
         if result['status'] == 'failed':
             print(f"Failed to generate video structure for {title}")
             return False
@@ -188,7 +192,7 @@ class BookSummary:
     async def gen_visualDesc(self, title, book_dir):
         print(f"gen_visualDesc for {title}")
 
-        tmpl = self.prompter.tasks['visual_desc']
+        tmpl = self.prompter.tasks['visual_desc1']
         ext = self.exts['videoStructure']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
             vid = json.load(f)
@@ -196,19 +200,55 @@ class BookSummary:
         allDesc = []
         for sec in secs:
             print(f"sec: {sec['section']}")
+            count = sec['duration']*6
             vidInfo = json.dumps(sec, ensure_ascii=False, indent=4)
-            query = tmpl.format(vid_stru=vidInfo)
+            query = tmpl.format(vid_stru=vidInfo,count=count)
+            with open('temp_query.txt', 'w', encoding='utf-8') as f:
+                f.write(query)
             asw = await self.llm.ask_llm(query, '')
-            result = self.ans_extr.output_extr('video_structure', asw)
+            result = self.ans_extr.output_extr('visual_desc1', asw)
             if result['status'] == 'failed':
-                print(f"Failed to generate video structure for {title}")
+                print(f"Failed to generate visual desc for {title}")
                 continue
             result = result['msg']
-            allDesc.extend(result['shots'])
+            shots = [{'section': sec['section'], **shot} for shot in result['shots']]
+            allDesc.extend(shots)
+            
+
         for i, item in enumerate(allDesc):
-            item['image_number'] = i+1
+            item['shot_number'] = i+1
+        newDesc = copy.deepcopy(allDesc)
+        for item in newDesc:
+            item.pop('section', None)
+            item.pop('motion_prompt', None)
+        
+        print(f"group_reusedImage for {title}")
+        tmpl = self.prompter.tasks['reused_image']
+        
+        vidInfo = json.dumps({'shots': newDesc}, ensure_ascii=False, indent=4)
+        query = tmpl.format(img_desc=vidInfo)
+        with open('temp_query.txt', 'w', encoding='utf-8') as f:
+            f.write(query)
+
+        asw = await self.llm.ask_llm(query, '')
+        result = self.ans_extr.output_extr('reused_image', asw)
+        if result['status'] == 'failed':
+            print(f"Failed to generate video structure for {title}")
+            return False
+        result = result['msg']
+        with open('temp_result.txt', 'w', encoding='utf-8') as f:
+            f.write(json.dumps(result, ensure_ascii=False, indent=4))
+
+        for group in result['reused_images']:
+            reused = group['shots']
+            print(f"reused: {reused}")
+            reused.sort()
+            baseId = reused[0]
+            for sId in reused[1:]:
+                allDesc[sId-1]['reused'] = f'shot_number_{baseId}'
+
         ext = self.exts['visualDesc']
-        self.dp.save_json(os.path.join(book_dir, f'{title}{ext}'), {'shots': allDesc })
+        self.dp.save_json(os.path.join(book_dir, f'{title}{ext}'), {'shots': allDesc})
         return True
 
 if __name__ == '__main__':
