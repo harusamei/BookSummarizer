@@ -173,89 +173,19 @@ Design a full video structure including:
 
 </TASK>
 
-// Video Structure and Script Suggestions (with Shot Descriptions)
-<TASK:video_structure>
-# **Book Introduction Video Structure**
-
-You are a Bilibili creator who specializes in producing book introduction videos. You will be provided with two types of input:
-- A written book guide (the main source)
-- Basic book information (for reference only)
-
-Your task is to adapt the written book guide into a complete 10-minute video structure, which will serve as the basis for a video that introduces the book to viewers in an engaging visual format.
-
-### Deliverables
-Design a full video structure including:
-- Duration for each section (in minutes)
-- Key content points
-- Visual style prompts
-- Image anchor
-- Shot descriptions
-- Music suggestions
-    
-### Guidelines
-- The total video duration should be approximately 10 minutes
-- Each section must include at least 10 individual shots
-- Visual style prompts should match the book’s tone and themes, and follow a descriptive format, e.g.: Vintage cinematic style, sepia tones, 1930s European interior, warm lighting, nostalgic atmosphere
-- The Image Anchor should provide a highly detailed visual reference for stylistic consistency
-- The following are **prohibited**:
-  - No real-life actors or on-screen hosts
-  - No text-only screens — avoid slides resembling PowerPoint-style title cards (e.g., a solid background with only a sentence like “xxx”)
-  - No subtitles or text overlays
-  - No account promotions or subscription reminders
-- Ensure smooth pacing and logical transitions between sections
-- Output must strictly follow the JSON format of the output example below
-
---- 
-
-### Input
-- Written Book Guide:
-{std_txt}
-
-- Basic Book Information (in JSON format)
-```json
-{book_info}
-```
-
-### Output Example
-```json
-{{
-  "video_structure": [
-    {{
-      "section": "",            
-      "duration": 1,           // duration in minutes
-      "main_content": "",      // main content in the section
-      "visual_style": "",      
-      "music_suggestion": "",
-      "image_anchor": "",       
-      "shots": [                
-        "...",  // shot descriptions
-        "...",
-        // At least 10 individual shots
-      ]
-    }},
-    {{
-        // ... Additional sections
-    }}
-  ]
-}}
-
-```json
-
-</TASK>
-
 <TASK: visual_desc1>
 
 # Static Image and Video Prompt Generation
 
-You are a professional visual designer specializing in short video aesthetics for Bilibili. 给定一个视频结构，你的任务是设计shots, 并为每个shot生成precise visual prompts. These prompts will be used to create high-quality static images and dynamic video sequences.
+You are a professional visual designer specializing in short video aesthetics for Bilibili. Given a video structure, your task is to design shots and generate precise visual prompts for each one. These prompts will be used to create high-quality static images and dynamic video sequences.
 
 ## Task Description
-- 为输入的section设计 {count} 个shots.
+- Design {count} shots for each input section.
 - Write a detailed static image description for each shot.
-- Provide a motion content prompt to animate each image.
+- Provide a motion prompt to animate each image..
 
 ## Guidelines
-- 根据content和visuals来设计shots.
+- Design shots based on the section’s content and visuals.
 - Follow the `visual_style` to ensure aesthetic consistency.
 - Every shot must include both image and motion prompts.
 - Reuse previous descriptions if visually similar to maintain coherence.
@@ -272,11 +202,12 @@ You are a professional visual designer specializing in short video aesthetics fo
   - Facial expression and body posture
   - Background elements
   - Lighting and color tone
-- The following are **prohibited**:
-  - No real-life actors or on-screen hosts
-  - No text-only screens — avoid slides resembling PowerPoint-style title cards (e.g., a solid background with only a sentence like “xxx”)
-  - No subtitles or text overlays
-  - No account promotions or subscription reminders
+
+- **Avoid**:
+  - Real-life actors or hosts
+  - Text-only slides (e.g., title cards)
+  - Subtitles or text overlays
+  - Promotional elements
 
 - Use clear directives like:
   - "Generate an image of a character standing..."
@@ -293,6 +224,8 @@ You are a professional visual designer specializing in short video aesthetics fo
   - Mood or time changes: dawn, dusk, emotional shifts
   - Character actions: turning, walking, reaching
   - Effects: flickering light, moving fabric, hair swaying
+
+---
 
 ## Output Requirements
 
@@ -321,82 +254,6 @@ You are a professional visual designer specializing in short video aesthetics fo
   ]
 }}
 ```
-
-</TASK>
-
-<TASK: visual_desc>
-
-# Static Image and Video Prompt Generation
-
-You are a professional visual designer specializing in short video aesthetics for Bilibili. Given a script for a book-themed show, your task is to generate precise visual prompts for each shot. These prompts will be used to create high-quality static images and dynamic video sequences.
-
-## Task Description
-
-- Write a detailed static image description for each shot.
-- Provide a motion content prompt to animate each image.
-
-## Guidelines
-
-- Follow the `visual_style` to ensure aesthetic consistency.
-- Every shot must include both image and motion prompts.
-- Reuse previous descriptions if visually similar to maintain coherence.
-- Apply consistent phrasing for composition and camera direction.
-
-## Static Image Description Rules
-
-- For use with text-to-image tools like DALL·E.
-- Neutral, high-resolution composition (no exaggerated angles or action).
-- Include:
-  - Visual_style
-  - Scene layout
-  - Character appearance and clothing
-  - Facial expression and body posture
-  - Background elements
-  - Lighting and color tone
-
-- Use clear directives like:
-  - "Generate an image of a character standing..."
-  - "The background shows..."
-  - "The character wears..."
-
-## Motion Prompt Rules
-
-- Designed for tools like Runway Gen-2.
-- Include:
-  - Camera movement: dolly-in, slow pan, orbit shot
-  - Motion type and speed: cinematic slow-mo, fast-paced
-  - Ambient motion: wind, fog, drifting clouds
-  - Mood or time changes: dawn, dusk, emotional shifts
-  - Character actions: turning, walking, reaching
-  - Effects: flickering light, moving fabric, hair swaying
-
-## Output Requirements
-
-- Output must be in Chinese.
-- Strictly follow the JSON format provided below
-
-### Input:
-*** Video Structure Script (JSON format) ***
-```json
-{vid_stru}
-```
-
-### Output:
-```json
-{{
-  "shots": [
-    {{
-      "shot_number": 1,
-      "image_description": "",  // Description for text-to-image generation
-      "motion_prompt": ""   // prompt to animate static image
-    }},
-    {{
-      // ... Continue for each shot
-    }}
-  ]
-}}
-```
-
 </TASK>
 
 <TASK: reused_image>
@@ -432,8 +289,8 @@ Based on the input shot descriptions, group visually identical or highly similar
 </TASK>
 
 // Generate Bilibili Video Voiceover Script Based on Video Structure and Written Book Guide
-<TASK: b_video_script>
-# **Bilibili Literary Video Script Generator**
+<TASK: b_voiceover>
+# **Bilibili Literary Video voiceover Generator**
 You are a scriptwriter creating voiceover narration for a Bilibili book review video. Based on a written guide of the book and a predefined video structure, write a Chinese voiceover script to match the video content.
 
 ---
@@ -517,7 +374,7 @@ Do not copy or paraphrase long passages from the original review. Instead, reorg
 Please format your response in Markdown.
 </TASK>
 
-
+// 废弃
 <TASK: b_video_rewrite>
 # **Bilibili Book Recommendation Video Script Rewrite (Enhance Storytelling, Pacing, and Visual Flow)**
 
