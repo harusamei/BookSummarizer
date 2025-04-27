@@ -95,18 +95,18 @@ class AnsExtractor:
 
         tlist = llm_answer.split('```json', 1)
         if len(tlist) >1:
-            aws = tlist[1]
+            asw = tlist[1]
         else:
-            aws = llm_answer
+            asw = llm_answer
         # 只提取第一个json
-        aws = aws.split('```', 1)[0]
-        aws = aws.strip()
-        aws = re.sub(r',\s*([\]}])', r'\1', aws)    # trailing comma
+        asw = asw.split('```', 1)[0]
+        asw = asw.strip()
+        asw = re.sub(r',\s*([\]}])', r'\1', asw)    # trailing comma
         
         try:
             # 将 JSON 字符串转换为字典
-            aws = aws.replace('\"', '"')
-            data = json.loads(aws)
+            asw = asw.replace('\"', '"')
+            data = json.loads(asw)
             result['status'] = 'succ'
             result['msg'] = data
         except json.JSONDecodeError as e:

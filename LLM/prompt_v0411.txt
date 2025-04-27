@@ -129,6 +129,7 @@ Your task is to adapt the written book guide into a complete 10-minute video str
 ### Deliverables
 Design a full video structure including:
 - Duration for each section (in minutes)
+- Section title
 - Key content points
 - Visual style prompts
 - Visuals
@@ -158,6 +159,7 @@ Design a full video structure including:
     {{
       "section": "",          // section title 
       "duration": 1,          // duration in minutes
+      "tagline": "",          // tagline for the section
       "content": "",          // main content in the section
       "visual_style": "",     // visual style prompts
       "music_suggestion": "",
@@ -372,6 +374,27 @@ Do not copy or paraphrase long passages from the original review. Instead, reorg
 
 ### Output
 Please format your response in Markdown.
+</TASK>
+
+<TASK: translation>
+# **Translation Task**
+
+将下面的{lang}内容翻译为简体中文。  
+**要求：**  
+- 保持原有内容的**结构不变**（如输入为 JSON，输出为同样结构的 JSON；如输入为纯文本，则输出纯文本）。  
+- 保持**字段名不变**，仅翻译字段值（如果是 JSON）。  
+- 遇到非英文内容（如数字、符号）时，**原样保留**。  
+- 遇到专有名词（如品牌名、地名）时，请根据常用中文译名翻译，否则音译或保留。  
+- 语言风格自然、流畅，符合现代汉语表达习惯。
+
+---
+
+### Input:
+{s_content}
+
+### Output:
+...// 直接输出翻译后的内容，保持原有格式。
+
 </TASK>
 
 // 废弃

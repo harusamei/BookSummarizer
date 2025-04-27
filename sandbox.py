@@ -1,5 +1,6 @@
 import asyncio
 import json
+
 from LLM.prompt_loader1 import Prompt_generator
 from LLM.llm_agent import LLMAgent
 from LLM.ans_extractor import AnsExtractor
@@ -94,5 +95,7 @@ if __name__ == '__main__':
     #asyncio.run(bs.gen_bookInfo(title, author))
     #asyncio.run(bs.gen_summary('bookInfo.json'))
     #asyncio.run(bs.rewrite('浮士德'))
-    asyncio.run(bs.image_desc('浮士德'))
+    #asyncio.run(bs.image_desc('浮士德'))
+    file_path = 'test.pdf'
+    bs.write_to_pdf(file_path)
     print("done")
