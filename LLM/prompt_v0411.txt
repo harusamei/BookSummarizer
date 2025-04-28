@@ -102,7 +102,7 @@ Your writing should unfold in smooth, well-structured paragraphs that guide the 
 ### Requirements:
 - Write in Chinese
 - Style should be polished, logical, and reader-friendly—suitable for literary reviews, longform essays, or blog articles
-- All elements in the input (plot, characters, scenes, etc.) must be fully covered and appropriately expanded
+- The generation process must preserve the integrity of the plot, with the summary of characters and key story arcs accounting for about 40% of the overall content.
 - The text should be at least 2000 Chinese characters
 - Use Markdown format for structure and readability
 
@@ -346,7 +346,7 @@ You will be given two types of input:
 1. A **formal literary review or introduction** (this is your main source).  
 2. The book’s **basic information** (use this as supporting reference).
 
-Your task is to create a **book guide of around 2,000 Chinese characters**, introducing the book’s background, core themes, main content, and reading value. The goal is to make the book feel approachable and appealing to everyday readers.
+Your task is to create a **book guide of around 2,000 Chinese characters**, introducing the book’s background, core themes, main scenes, and reading value. The goal is to make the book feel approachable and appealing to everyday readers.
 
 This guide should be optimized for mobile reading.
 
@@ -358,6 +358,7 @@ Write in a warm, conversational tone—like you're recommending a great book to 
 **Length & Structure:**  
 Keep the entire article within ~2,000 characters. Use short, clear paragraphs that are easy to browse.  
 Include a title and subheadings. Use smooth transitions between sections.  
+Keep the plot complete when introducing the story, but avoid excessive detail. Focus on the main characters and key scenes.
 Do **not** use bullet points or numbered lists.
 
 **Rewriting Notes:**  
@@ -379,13 +380,13 @@ Please format your response in Markdown.
 <TASK: translation>
 # **Translation Task**
 
-将下面的{lang}内容翻译为简体中文。  
-**要求：**  
-- 保持原有内容的**结构不变**（如输入为 JSON，输出为同样结构的 JSON；如输入为纯文本，则输出纯文本）。  
-- 保持**字段名不变**，仅翻译字段值（如果是 JSON）。  
-- 遇到非英文内容（如数字、符号）时，**原样保留**。  
-- 遇到专有名词（如品牌名、地名）时，请根据常用中文译名翻译，否则音译或保留。  
-- 语言风格自然、流畅，符合现代汉语表达习惯。
+Translate the following {lang} content into Simplified Chinese.  
+**Requirements:**  
+- Maintain the **original structure** of the content (e.g., if the input is in JSON format, the output must also be in JSON; if the input is plain text, the output should remain plain text).  
+- **Do not change** field names if the input is structured (like JSON); only translate the field values.  
+- Preserve non-English elements (such as numbers, symbols) **as-is**.  
+- For proper nouns (such as brand names or place names), use their commonly accepted Chinese translations if available; otherwise, transliterate or keep them as-is.  
+- Ensure the translation style is natural, fluent, and aligned with modern Chinese usage.
 
 ---
 
@@ -393,7 +394,7 @@ Please format your response in Markdown.
 {s_content}
 
 ### Output:
-...// 直接输出翻译后的内容，保持原有格式。
+...// Directly output the translated content, preserving the original format.
 
 </TASK>
 

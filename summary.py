@@ -12,6 +12,8 @@ from LLM.ans_extractor import AnsExtractor
 from processor import DProcessor
 from pdfsaver import PDFSaver
 from reportlab.lib.units import inch
+from reportlab.lib.styles import ParagraphStyle
+
 
 sys.path.insert(0, os.getcwd().lower())
 
@@ -49,7 +51,9 @@ class BookSummary:
             if title.startswith('《'):
                 title = title[1:-1]
             author = row['author']
-            hasIntroduction = row['hasIntroduction']
+            # 有书籍序言或专业导读
+            hasIntroduction = row['hasReference']
+            # 写好的2000字导读
             hasWritten = row['hasWritten']
             if hasWritten.lower() == 'y':
                 hasWritten = True
@@ -59,27 +63,33 @@ class BookSummary:
             sub_book_dir = os.path.join(book_dir, title)
             if not os.path.exists(sub_book_dir):
                 os.makedirs(sub_book_dir)
-
+            data_dir = os.path.join(sub_book_dir, 'data')
+            if not os.path.exists(data_dir):
+                os.makedirs(data_dir)
+            
             print(f'author: {author}, title: {title}')
-            
-            # self.flags['bookInfo'] = await self.gen_bookInfo(title, author, sub_book_dir)
+            self.flags['bookInfo'] = await self.gen_bookInfo(title, author, data_dir)
 
-            # print('part 1: generate book summarization')
-            # # 有人工写的导读
-            # if hasWritten is True:
-            #     print(f"Book {title} already has a human-written.")
-            # elif hasIntroduction is True:   # 书籍序言或专业导读
-            #     print(f"Book {title} already has an official introduction .")
-            #     self.flags['introduction'] = await self.rewrite_intro(title, author, sub_book_dir)
-            # else:
-            #     self.flags['introduction'] = await self.gen_introduction(title, author, sub_book_dir)
-        
-            # print('part 2: generate visual content')
-            # self.flags['videoStructure'] = await self.gen_videoStructure(title, sub_book_dir)
-            # self.flags['visualDesc'] = await self.gen_visualDesc(title, sub_book_dir)
-            
-            # print('part 3: generate voiceover script')
-            # self.flags['voiceover'] = await self.gen_voiceover(title, author, sub_book_dir)
+            print('part 1: generate book summarization')
+            # 有人工写的导读
+            if hasWritten is True:
+                print(f"Book {title} already has a human-written.")
+            elif hasIntroduction is True:   # 书籍序言或专业导读
+                print(f"Book {title} already has an official introduction .")
+                self.flags['introduction'] = await self.rewrite_intro(title, author, data_dir)
+            else:
+                self.flags['introduction'] = await self.gen_introduction(title, author, data_dir)
+            print('part 2: generate visual content')
+            tryCount = 0
+            while self.flags.get('videoStructure',False) is False and tryCount < 1:
+                self.flags['videoStructure'] = await self.gen_videoStructure(title, data_dir)
+                tryCount += 1
+            tryCount = 0
+            while self.flags.get('visualDesc',False) is False and tryCount < 1:
+                self.flags['visualDesc'] = await self.gen_visualDesc(title, data_dir)
+                tryCount += 1
+            print('part 3: generate voiceover script')
+            self.flags['voiceover'] = await self.gen_voiceover(title, author, data_dir)
 
             await self.translation(title, sub_book_dir)
             break
@@ -279,7 +289,7 @@ class BookSummary:
         tmpl = self.prompter.tasks['translation']
         lang = 'English'
         ext = self.exts['visualDesc']
-        with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(book_dir, f'data/{title}{ext}'), 'r', encoding='utf-8') as f:
             shots = json.load(f)
         shots = shots['shots']
         sections = []
@@ -310,10 +320,10 @@ class BookSummary:
             shots_cn.append(data[0]['shots'])
             if len(data) > 1:
                 shots_cn.append(data[1]['shots'])
-            break
+            
         print(f"shots_cn: {len(shots_cn)}")
         ext = self.exts['videoStructure']
-        with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(book_dir, f'data/{title}{ext}'), 'r', encoding='utf-8') as f:
             vid = json.load(f)
             
         query = tmpl.format(lang=lang, s_content=json.dumps(vid, ensure_ascii=False, indent=4))
@@ -325,21 +335,40 @@ class BookSummary:
         vid_cn = result['msg']
         
         self.pdf_saver.create_pdf(filename=os.path.join(book_dir, f'{title}_cn.pdf'))
-        self.pdf_saver.add_title(f"视频大纲及镜头：{title}")
+        self.pdf_saver.add_title(f"视频大纲：{title}")
         for i, item in enumerate(vid_cn['video_structure']):
             section = item['section']
             self.pdf_saver.add_heading1(f"第{i+1}节：{section}")
+            self.pdf_saver.add_heading2(f"标语：{item['tagline']}")
             contents =[f"时长：{item['duration']}秒",
                        f"内容：{item['content']}",
                        f"视频元素：{item['visuals']}",
-                       f"镜头个数：{len(shots_cn[i])}"]
+                       f"镜头个数：{len(shots_cn[i])}个"]
             self.pdf_saver.add_body(contents)
-            tbody = [["No.", "Title", "Reused"]]
+            tbody = [["No.", "简述", "复用"]]
             for shot in shots_cn[i]:
-                tbody.append([shot['shot_number'], shot['shot_title'], shot.get('reused', '')])
-            self.pdf_saver.add_table(tbody, col_widths=[0.7*inch, 4*inch, 1*inch])
-            break
-
+                reused = shot.get('reused', '')
+                reused = reused.replace('shot_number_', 'No_')
+                tbody.append([shot['shot_number'], shot['shot_title'], reused])
+            self.pdf_saver.add_table(tbody, col_widths=[0.5*inch, 4*inch, 0.5*inch])
+            
+        
+        self.pdf_saver.add_page_break()
+        self.pdf_saver.add_heading1(f"文生图prompt：")
+        self.pdf_saver.cell_style = ParagraphStyle(
+            name="TableCell",
+            fontName="SimSun",
+            fontSize=8,
+            leading=12,
+            wordWrap='CJK',  # 启用中文自动换行
+        )
+        tbody = [["Sect.","Shot", "Prompt"]]
+        for i, shots in enumerate(shots_cn):
+            for shot in shots:
+                shot_num = shot['shot_number']
+                desc = shot['image_description']
+                tbody.append([i+1, shot_num, desc])
+        self.pdf_saver.add_table(tbody, col_widths=[0.5*inch, 0.5*inch, 6*inch])
         self.pdf_saver.save()
         return
 

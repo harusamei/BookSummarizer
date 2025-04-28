@@ -11,18 +11,23 @@ from reportlab.platypus import Table, TableStyle
 
 class PDFSaver:
     def __init__(self):
-        #pdfmetrics.registerFont(TTFont('SimSun', 'simsun.ttc'))
-        # 默认样式
-        styles = getSampleStyleSheet()
+        
         # 注册中文字体
         pdfmetrics.registerFont(TTFont('SimSun', 'simsun.ttc'))
+        self.set_style()
+        self.doc = None
+        self.elements = []
+
+    def set_style(self):
+        # 默认样式
+        styles = getSampleStyleSheet()
         # 自定义样式
         self.title_style = ParagraphStyle(
             'Title',
             parent=styles['Title'],
             fontName='SimSun',
-            fontSize=24,
-            leading=28,
+            fontSize=22,
+            leading=18,
             alignment=1,  # 居中
             spaceAfter=20,
         )
@@ -31,7 +36,16 @@ class PDFSaver:
             parent=styles['Heading1'],
             fontName='SimSun',
             fontSize=18,
-            leading=22,
+            leading=18,
+            spaceBefore=12,
+            spaceAfter=8,
+        )
+        self.heading2_style = ParagraphStyle(
+            'Heading2',
+            parent=styles['Heading1'],
+            fontName='SimSun',
+            fontSize=14,
+            leading=16,
             spaceBefore=12,
             spaceAfter=8,
         )
@@ -43,9 +57,14 @@ class PDFSaver:
             leading=16,
             spaceAfter=10,
         )
-        self.doc = None
-        self.elements = []
-        
+        self.cell_style = ParagraphStyle(
+            name="TableCell",
+            fontName="SimSun",
+            fontSize=10,
+            leading=12,
+            wordWrap='CJK',  # 启用中文自动换行
+        )
+    
     def create_pdf(self, filename="output.pdf"):
 
         doc = SimpleDocTemplate(
@@ -70,7 +89,7 @@ class PDFSaver:
         # 页眉
         canvas.saveState()
         canvas.setFont('SimSun', 10)
-        canvas.drawString(inch, letter[1] - 0.75 * inch, "~八分钟漫步书间@书甜~")
+        canvas.drawString(inch, letter[1] - 0.75 * inch, "~八分钟读书推荐@书甜~")
         # 页脚
         canvas.setFont('SimSun', 9)
         canvas.setFillColor(colors.grey)
@@ -95,7 +114,7 @@ class PDFSaver:
 
     def add_heading2(self, heading: str):
         # 二级标题
-        self.elements.append(Paragraph(heading, self.heading1_style))
+        self.elements.append(Paragraph(heading, self.heading2_style))
         #self.elements.append(Spacer(1, 0.2*inch))
 
     # 加多行内容
@@ -106,21 +125,11 @@ class PDFSaver:
             #self.elements.append(Spacer(1, 0.1*inch))
 
     def add_table(self, data: list[list], col_widths=None, row_heights=None):
-        # 定义段落样式，用于表格单元格
-        cell_style = ParagraphStyle(
-            name="TableCell",
-            fontName="SimSun",
-            fontSize=10,
-            leading=12,
-            wordWrap='CJK',  # 启用中文自动换行
-        )
-
         # 将数据转换为 Paragraph 对象
         wrapped_data = [
-            [Paragraph(str(cell), cell_style) for cell in row]
+            [Paragraph(str(cell), self.cell_style) for cell in row]
             for row in data
         ]
-
         # 创建表格
         table = Table(wrapped_data, colWidths=col_widths, rowHeights= row_heights)
 
@@ -150,7 +159,9 @@ if __name__ == '__main__':
     pdf_saver = PDFSaver()
     pdf_saver.create_pdf(filename="test.pdf")
     pdf_saver.add_title("中文标题")
-    pdf_saver.add_body("This is some content to save in the PDF.")
+    pdf_saver.add_heading1("一级标题")
+    pdf_saver.add_heading2("二级标题")
+    pdf_saver.add_body(["This is some content to save in the PDF."])
     data = [
         ["列1", "列2", "列3"],
         ["数据1", "数据2", "数据3"],
