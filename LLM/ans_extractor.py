@@ -20,17 +20,10 @@ class AnsExtractor:
         }
 
     def output_extr(self, taskname, llm_answer):
-        result = copy.copy(self.result)
-        # LLM 返回错误信息
-        if 'err' in llm_answer.lower():
-            result['status'] = 'failed'
-            result['msg'] = 'err_llm:'+llm_answer
-            return result
         # 存在解析方法
         callFunc = self.tasks.get(taskname,self.parse_json)
         return callFunc(llm_answer)
 
-    
     # 解析从LLM获得的分组信息
     def parse_grouping(self, llm_answer) -> dict:
 
@@ -261,7 +254,20 @@ class AnsExtractor:
 if __name__ == "__main__":
     ans_extr = AnsExtractor()
     llm_output = """
-\n\n```json\n{\n  "sql": "SELECT * FROM imdb_movie_dataset WHERE director IN (SELECT actors FROM imdb_movie_dataset)",\n  "tables": [\n    {"name": "imdb_movie_dataset", "alias": "t1"}\n  ],\n  "columns": [\n    {"name": "*", "table": "imdb_movie_dataset"}\n  ],\n  "values": []\n}\n```\n\nHowever, the SQL query generated above may not be the most efficient way to solve this problem. A more efficient way would be to use the `IN` operator with a subquery that selects the `actors` column from the same table.\n\nAlternatively, you could use the `EXISTS` operator with a subquery that checks if the `director` exists in the `actors` column.\n\nHere\'s an updated version of the output:\n\n```json\n{\n  "sql": "SELECT * FROM imdb_movie_dataset t1 WHERE EXISTS (SELECT 1 FROM imdb_movie_dataset t2 WHERE t1.director = t2.actors)",\n  "tables": [\n    {"name": "imdb_movie_dataset", "alias": "t1"},\n    {"name": "imdb_movie_dataset", "alias": "t2"}\n  ],\n  "columns": [\n    {"name": "*", "table": "imdb_movie_dataset"}\n  ],\n  "values": []\n}\n```\n\nThis query will return all rows from the `imdb_movie_dataset` table where the `director` exists in the `actors` column.']
+```json
+{
+  "shots": [
+    {
+      "shot_number": 1,
+      "shot_title": "The Threshold of Knowledge",
+      "scene_description": "An ancient, weathered book lies half-open on a wooden desk. The title 'Faust' glows faintly on the page, as if etched in light. The background is a dimly lit study, with shadows stretching across the room. A single candle flickers, casting warm light onto the book while the edges of the frame remain steeped in cold, bluish darkness.",
+      "composition": "The camera is positioned at a low, slightly tilted angle, focusing on the book in the foreground. The book is centered, with the candle placed slightly off to the right, creating a diagonal line of light and shadow. The background is blurred, emphasizing the book as the focal point.",
+      "color_palette": "Warm golden tones from the candlelight contrast with deep, cold blues and grays in the shadows. The glowing title on the book is a luminous gold, symbolizing enlightenment amidst darkness.",
+      "symbolic_elements": "The book represents forbidden knowledge and the eternal quest for understanding. The glowing title symbolizes the allure of wisdom, while the interplay of light and shadow reflects the internal conflict between aspiration and temptation. The candle serves as a fragile beacon of hope and clarity in an otherwise dark and mysterious setting."
+    }
+  ]
+}
+```
                 """
     result1 = ans_extr.output_extr('default',llm_output)
     print(result1)

@@ -179,19 +179,17 @@ Design a full video structure including:
 
 # Static Image and Video Prompt Generation
 
-You are a professional visual designer specializing in short video aesthetics for Bilibili. Given a video structure, your task is to design shots and generate precise visual prompts for each one. These prompts will be used to create high-quality static images and dynamic video sequences.
+You are a professional visual designer specializing in short video aesthetics for Bilibili. Given a video segment, your task is to design shots and generate precise visual prompts. These prompts will be used to create high-quality static images and dynamic video sequences.
 
 ## Task Description
-- Design {count} shots for each input section.
+- Design {count} shots for input segment.
 - Write a detailed static image description for each shot.
 - Provide a motion prompt to animate each image..
 
 ## Guidelines
-- Design shots based on the section’s content and visuals.
-- Follow the `visual_style` to ensure aesthetic consistency.
+- Follow the overall_style and the `visual_style` of current segment.
 - Every shot must include both image and motion prompts.
-- Reuse previous descriptions if visually similar to maintain coherence.
-- Apply consistent phrasing for composition and camera direction.
+- Apply consistent descriptions if visually similar to maintain coherence.
 
 ## Static Image Description Rules
 
@@ -260,10 +258,10 @@ You are a professional visual designer specializing in short video aesthetics fo
 
 <TASK: reused_image>
 # ** Group Reusable Images **
-Based on the input shot descriptions, group visually identical or highly similar shots together. The goal is to reuse the same generated image across multiple shots to improve efficiency.
+Based on the input shot content, group visually identical or highly similar shots together. The goal is to reuse the same generated image across multiple shots to improve efficiency.
 
 ### Requirements
-- Group shots only by the overall scene description. Do not analyze specific elements like lighting, objects, characters, camera angles, or subtitles.
+- Group shots only by the static frame. Do not analyze specific elements like lighting, camera angles, or subtitles.
 - Only output groups where image reuse is possible. Do not include shots that have no reusable images.
 - Output must strictly follow the specified JSON format.
 
@@ -292,17 +290,15 @@ Based on the input shot descriptions, group visually identical or highly similar
 
 // Generate Bilibili Video Voiceover Script Based on Video Structure and Written Book Guide
 <TASK: b_voiceover>
-# **Bilibili Literary Video voiceover Generator**
-You are a scriptwriter creating voiceover narration for a Bilibili book review video. Based on a written guide of the book and a predefined video structure, write a Chinese voiceover script to match the video content.
+# **Bilibili Literary Video Voiceover Generator**
 
----
+Write a Chinese-language voiceover script based on a written book guide and a provided video structure. The total length should be approximately {word_count} characters.
 
-### **Requirements**
-- Total duration: about 10 minutes; total word count: around 2000 Chinese characters.
-- Each section in the video structure must have a corresponding voiceover.
-- Match the narration length and content to each section's duration.
-- Use the written guide as source material.
-- Output should include section titles and narration for each.
+Follow the structure closely:
+- Each section in the video structure must have a matching voiceover segment.
+- Match both length and pacing to the specified word count for each segment.
+- Ensure smooth, natural transitions between segments.
+- Include the title and narration for each segment.
 
 ---
 
@@ -314,10 +310,9 @@ You are a scriptwriter creating voiceover narration for a Bilibili book review v
 ---
 
 ### **Format**
-- Language: Chinese (for voiceover)
+
 - No bullet points or lists
 - Use paragraph breaks for smoother narration and editing
-- Minimum: 2000 Chinese characters
 - Output in Markdown format (no code blocks)
 
 ---
@@ -446,3 +441,169 @@ A full-length Chinese script for a Bilibili video, with visual cues at each tran
 
 </TASK>
 
+<TASK:visual_designer>
+# **short video visual design plan**
+You are a professional visual designer specializing in short-form video content on Bilibili, with a focus on literary and educational themes.
+
+You will receive two inputs:
+A formal literary guide or review (main content source)
+The book’s basic information (for reference only)
+
+Your task is to create a complete visual design plan for a short Bilibili video with a total runtime of **{minutes} minutes**.
+
+Your output should include:
+- Video Structure: Break down the content into clearly defined segments (including intro and outro) with duration estimates.
+- Visual Design per Segment:
+  - Segment title and tagline
+  - One-sentence summary of the segment's content
+  - Recommended visual style (e.g., Gothic, minimalist, hand-drawn, vintage cinematic)
+  - Scene description (characters, locations, symbols, transitions)
+  - Music style (classical, electronic, folk, etc.)
+  - Motion graphics & subtitle style (fonts, effects, pacing)
+  - Thumbnail Concept (color palette, layout, key elements)
+- Overall Style Keywords: 4–6 keywords summarizing the visual tone and mood
+---
+# **Output Requirements**
+- Output must be in Chinese.
+- Format your response strictly as JSON using the structure below
+
+# *Input:**
+*** A written book guide (the main source)
+{std_txt}
+
+*** Basic book information (JSON format)
+```json
+{book_info}
+```
+
+# **Output Example**
+```json
+{{
+  "overall_style": [
+    // 4–6 keywords summarizing the visual tone and mood
+  ],
+  "cover_image": {{
+    "title": "",
+    "subtitle": "",
+    "composition"："",
+    "color_scheme"：""
+  }},
+  "video_structure": [
+    {{
+      "segment": "Opening",
+      "tagline": "",
+      "summary": "",
+      "duration": 1,
+      "visual_style": "",
+      "scene_description": "",
+      "music_style": "",
+      "motion_graphics": "",
+      "thumbnail_concept": ""
+    }},
+    {{
+      // ... Additional segments
+    }}
+  ]
+}}
+</TASK>
+
+<TASK: visual_desc2>
+
+# Visual Design + Motion Graphics
+
+Based on the video script below, create {count} visual concepts. Each concept must include:
+- A static frame
+- A matching motion graphic (loop or short animation)
+Emphasize philosophical and symbolic imagery. Use contrasts between cold and warm tones to express internal emotional conflict. Each concept should reflect the script’s mood, character symbolism, and narrative structure.
+
+For each of the {count} concepts, provide:
+
+1. **Title** – A short, evocative name for the concept in **Chinese**.
+
+2. **Static Frame**
+   - **Scene Description**: What is happening in the image?
+   - **Composition**: Camera angle, subject placement, visual focus
+   - **Color Palette**: Highlight symbolic contrasts (e.g., cold vs. warm)
+   - **Symbolic Elements**: Metaphors, hidden meanings, visual references
+
+3. **Motion Graphic**
+   - **Motion Concept**: Loop or key animation idea
+   - **Duration**: 3–8 seconds
+   - **Motion Elements**: What moves? (e.g., flickering light, slow breathing, burning paper)
+   - **Mood/Emotion**: What feeling should the motion enhance? (e.g., dread, seduction, despair)
+
+---
+
+## Output Requirements
+
+- Strictly follow the specified JSON format provided below
+
+### Input:
+*** Video Segment Script (JSON format) ***
+```json
+{vid_stru}
+```
+
+### Output Example:
+```json
+{{
+  "shots": [
+    {{
+      "shot_number": 1,
+      "shot_title": "The Solitude of Prayer",
+      "static_frame": {{
+        "scene_description": "Margarete kneels at a church pew, hands clasped, eyes closed in prayer. Behind her rise tall stained glass windows.",
+        "composition": "Top-down shot with Margarete centered in the frame; the surrounding pews and floor create symmetrical lines.",
+        "color_palette": "Dominated by cool tones, with blue and purple light streaming through the windows.",
+        "symbolic_elements": "The stained glass symbolizes faith and redemption."
+      }},
+      "motion_graphic": {{
+        "motion_concept": "The stained glass light shifts gradually, with cool tones warming slowly.",
+        "duration": 3, 
+        "motion_elements": "Gradual light transitions; Margarete’s shadow gently flickers.",
+        "mood_emotion": "A mix of loneliness and hope, with a quiet, tragic undertone."
+      }}
+    }},
+    {{
+      ... // Continue for each shot
+    }}
+  ]
+}}
+```
+
+</TASK>
+
+// Generate a DALL·E-compatible prompt based on the static frame description.
+
+<TASK: img_prompt>
+# TXT2Image Prompt Generator
+
+## Goal:
+- Create a detailed DALL·E-style image prompt in both English and Chinese.
+- Determine whether the image is "generic" (lacking specific entities) or "specific" (featuring particular people, places, or symbols).
+
+## Instructions:
+- Include time period, scale, and scene composition.
+- Describe the objects and settings in detail. Avoid abstract concepts and translate them into visual elements.
+  - Refine the material details to avoid a plastic texture.
+  - Use specific adjectives to describe the scene.
+  - Include symbolic props or background elements to add visual depth and cultural context.
+- Define lighting and color tone consistently.
+- Mention any relevant art style or artist.
+- Convey the desired mood or atmosphere clearly.
+- Eliminate redundancy and ensure clarity in each sentence.
+
+## Input:
+**Static Frame Description (JSON)**
+```json
+{static_frame}
+```
+### Output:
+```json
+{{
+  "prompt_en": "",  // DALL·E prompt in English
+  "prompt_cn": "",  // DALL·E prompt in Chinese
+  "image_type": ""  // "generic" or "specific"
+}}
+```
+</TASK>

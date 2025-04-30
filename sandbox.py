@@ -37,23 +37,23 @@ class BookSummary:
         asw = await self.llm.ask_llm(query, '')
         self.write_to_txt(f'{title}_bv.md', asw)
 
-    async def rewrite(self, title):
-        txt_file = f'books/{title}_std.md'
-        json_file = f'books/{title}.json'
+    async def visual_plan(self, title):
+        txt_file = f'books/{title}/data/{title}_std.md'
+        json_file = f'books/{title}/data/{title}.json'
         with open(txt_file, 'r', encoding='utf-8') as f:
-            intro_txt = f.read()
+            std_txt = f.read()
         with open(json_file, 'r', encoding='utf-8') as f:
             abook = json.load(f)
         bookInfo = json.dumps(abook, ensure_ascii=False, indent=4)
 
-        tmpl = self.prompter.tasks['video_structure']
-        query = tmpl.format(book_info=bookInfo, std_txt=intro_txt)
+        tmpl = self.prompter.tasks['visual_designer']
+        query = tmpl.format(minutes=6, book_info=bookInfo, std_txt=std_txt)
         with open('temp_query.txt', 'w', encoding='utf-8') as f:
             f.write(query)
         asw = await self.llm.ask_llm(query, '')
-        result = self.ans_extr.output_extr('video_structure', asw)
+        result = self.ans_extr.output_extr('visual_designer', asw)
         if result['status'] == 'failed':
-            print(f"Failed to rewrite introduction for {title}")
+            print(f"Failed to video design for {title}")
             return None
         result = result['msg']
         self.write_to_json(f'books/{title}_vid.json', result)
@@ -90,12 +90,8 @@ class BookSummary:
 if __name__ == '__main__':
 
     bs = BookSummary()
-    # title = "何以笙箫默"
-    # author = "顾漫"
-    #asyncio.run(bs.gen_bookInfo(title, author))
-    #asyncio.run(bs.gen_summary('bookInfo.json'))
-    #asyncio.run(bs.rewrite('浮士德'))
-    #asyncio.run(bs.image_desc('浮士德'))
-    file_path = 'test.pdf'
-    bs.write_to_pdf(file_path)
+    title = "浮士德"
+    
+    asyncio.run(bs.visual_plan('浮士德'))
+   
     print("done")
