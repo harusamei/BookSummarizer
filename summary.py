@@ -13,30 +13,72 @@ from processor import DProcessor
 from pdfsaver import PDFSaver
 from reportlab.lib.units import inch
 from reportlab.lib.styles import ParagraphStyle
-
-
 sys.path.insert(0, os.getcwd().lower())
+
+config = {
+    'language': 'Chinese',
+    'duration': 5,              # 视频时长
+    'img_count': 5,             # 每秒生成的图片数量
+    'voice_word': 250*5,        # 旁白字数, 每分钟250字
+    'txt_word': 500*5,          # 文字版字数
+}
 
 
 class BookSummary:
-    def __init__(self, language='Chinese'):
+    def __init__(self):
 
         self.prompter = Prompt_generator()
         self.ans_extr = AnsExtractor()
         self.llm = LLMAgent()
         self.dp = DProcessor()      # data processor
         self.pdf_saver = PDFSaver()
-        self.lang = language
+        self.lang = config['language']  # 语言
+        self.duration = config['duration']  # 视频时长
+        self.voice_word = config['voice_word']  # 旁白字数
+        self.img_count = config['img_count']  # 每秒生成的图片数量
         # 文件使用的扩展名
         self.exts = {
             'bookInfo': '.json',
             'introduction': '_std.md',      # 文字版导言
-            'voiceover': '_bv.md',        # B站视频旁白
+            'voiceover': '_bv.md',          # B站视频旁白
             'visualDesc': '_desc.json',     # 图像，视频描述
-            'official': '_intro.txt',       # 官方或书籍序言
-            'videoStructure': '_vid.json'   # 视频结构
+            'reference': '_ref.txt',        # 书籍序言或专业导读
+            'videoDesign': '_vid.json'      # 视频结构
         }
+        self.flags = {}                     # 每一步成功与否的标志
+        self.resetFlags()
+
+    def resetFlags(self):
         self.flags = {}
+        for key in ['reference','bookInfo', 'introduction', 'videoDesign', 'visualDesc', 'voiceover']:
+            self.flags[key] = False
+
+    def init(self, row, book_dir):
+
+        self.resetFlags()
+        title = row['title'].lower()
+        if title.startswith('《'):
+            title = title[1:-1]
+        hasData = False
+        # 创建以书名命名的目录
+        bname_dir = os.path.join(book_dir, title)
+        if not os.path.exists(bname_dir):
+            os.makedirs(bname_dir)
+        data_dir = os.path.join(bname_dir, 'data')
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+        else:
+            hasData = True
+        
+        if hasData is False:
+            return title, bname_dir
+        
+        # 目录已经存在，检查是否有数据文件
+        for key, ext in self.exts.items():
+            file = os.path.join(data_dir, f'{title}{ext}')
+            if os.path.exists(file):
+                self.flags[key] = True
+        return title, bname_dir
 
     async def gen_batch(self, xls_file):
         books = pd.read_excel(xls_file, sheet_name=0)
@@ -45,69 +87,42 @@ class BookSummary:
         book_dir = os.path.dirname(os.path.abspath(xls_file))
         
         for _, row in books.iterrows():
-            hasWritten, hasIntroduction = False, False
-            self.flags = {}
-            title = row['title']
-            if title.startswith('《'):
-                title = title[1:-1]
-            author = row['author']
-            # 有书籍序言或专业导读
-            hasIntroduction = row['hasReference']
-            # 写好的2000字导读
-            hasWritten = row['hasWritten']
-            if hasWritten.lower() == 'y':
-                hasWritten = True
-            if hasIntroduction.lower() == 'y':
-                hasIntroduction = True
-            # 创建以书名命名的目录
-            sub_book_dir = os.path.join(book_dir, title)
-            if not os.path.exists(sub_book_dir):
-                os.makedirs(sub_book_dir)
-            data_dir = os.path.join(sub_book_dir, 'data')
-            if not os.path.exists(data_dir):
-                os.makedirs(data_dir)
             
-            # print(f'author: {author}, title: {title}')
-            # self.flags['bookInfo'] = await self.gen_bookInfo(title, author, data_dir)
+            title, bname_dir = self.init(row, book_dir)
+            data_dir = os.path.join(bname_dir, 'data')
+            author = row['author'].lower()
+            print(f'author: {author}, title: {title}')
+            self.flags['bookInfo'] = await self.gen_bookInfo(title, author, data_dir)
+            # 生成文字版的导读
+            print('part 1: generate txt summarization')
+            self.flags['introduction'] = await self.rewrite_intro(title, author, data_dir)
+            self.flags['introduction'] = await self.gen_introduction(title, author, data_dir)
 
-            # print('part 1: generate book summarization')
-            # # 有人工写的导读
-            # if hasWritten is True:
-            #     print(f"Book {title} already has a human-written.")
-            # elif hasIntroduction is True:   # 书籍序言或专业导读
-            #     print(f"Book {title} already has an official introduction .")
-            #     self.flags['introduction'] = await self.rewrite_intro(title, author, data_dir)
-            # else:
-            #     self.flags['introduction'] = await self.gen_introduction(title, author, data_dir)
-            # print('part 2: generate visual content')
-            # tryCount = 0
-            # while self.flags.get('videoStructure',False) is False and tryCount < 1:
-            #     self.flags['videoStructure'] = await self.gen_videoStructure(title, data_dir)
-            #     tryCount += 1
-            self.flags['videoStructure'] = True
-            self.flags['visualDesc'] = True
-            # tryCount = 0
-            # while self.flags.get('visualDesc',False) is False and tryCount < 1:
-            #     self.flags['visualDesc'] = await self.gen_visualDesc(title, data_dir)
-            #     tryCount += 1
-            # self.flags['imgPrompt'] = await self.gen_imgPrompt(title, data_dir)
-            # print('part 3: generate voiceover script')
-            # self.flags['voiceover'] = await self.gen_voiceover(title, author, data_dir)
+            print('part 2: generate visual documents')
+            self.flags['videoDesign'] = await self.gen_videoDesign(title, data_dir)
+            self.flags['visualDesc'] = await self.gen_visualDesc(title, data_dir)
+            self.flags['imgPrompt'] = await self.gen_imgPrompt(title, data_dir)
 
-            await self.pdf_output(title, sub_book_dir)
+            print('part 3: generate voiceover script')
+            self.flags['voiceover'] = await self.gen_voiceover(title, author, data_dir)
+
+            # await self.pdf_output(title, bname_dir)
             break
     
-    # 输出json 存放在book_dir 目录下
-    async def gen_bookInfo(self, title, author, book_dir):
+    # 输出json 存放在store_dir
+    async def gen_bookInfo(self, title, author, store_dir):
 
+        if self.flags['bookInfo'] is True:
+            print(f"bookInfo for {title} already exists")
+            return True
+        
+        print(f"gen_bookInfo for {title}")
         tmpls = {}
         tasks = ['brief_intro', 'key_scenes']
         for key in tasks:
             tmpls[key] = self.prompter.tasks[key]
-
         abook = {}
         for key in tasks:
-            print(f"gen {key} for {title}")
             query = tmpls[key].format(title=title, author=author, language=self.lang)
             asw = await self.llm.ask_llm(query, '')
             result = self.ans_extr.output_extr(key, asw)
@@ -118,74 +133,108 @@ class BookSummary:
             abook.update(result)
 
         ext = self.exts['bookInfo']
-        outFile = os.path.join(book_dir, f'{title}{ext}')
+        outFile = os.path.join(store_dir, f'{title}{ext}')
         self.dp.save_json(outFile, abook)
         return True
 
-    async def gen_introduction(self, title, author, book_dir):
+    async def gen_introduction(self, title, author, data_dir):
+        # 已经存在文字版导读
+        if self.flags['introduction'] is True:
+            print(f"introduction for {title} already exists")
+            return True
         
+        print(f"gen introduction for {title}")
         abook = {}
         tmpl = self.prompter.tasks['book_introduction']
-        if self.flags.get('bookInfo') is False:
+        if self.flags['bookInfo'] is False:
             abook['author'] = author
             abook['title'] = title
         else:
             ext = self.exts['bookInfo']
-            with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
+            with open(os.path.join(data_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
                 abook = json.load(f)
         
         jsonStr = json.dumps(abook, ensure_ascii=False, indent=4)
         query = tmpl.format(book_info=jsonStr)
-        asw = await self.llm.ask_llm(query, '')
-        ext = self.exts['introduction']
-        self.dp.save_txt(os.path.join(book_dir, f'{title}{ext}'), asw)
 
-        return True
+        ext = self.exts['introduction']
+        tryCount = 0
+        flag = False
+        # 生成3个导读
+        while tryCount < 3:
+            asw = await self.llm.ask_llm(query, '')
+            tryCount += 1
+            if len(asw) > 0 and 'err_llm:' not in asw:
+                flag = True
+                break 
+        if flag is False:
+            print(f"Failed to generate introduction for {title}")
+        else:
+            self.dp.save_txt(os.path.join(data_dir, f'{title}{ext}'), asw)
+        return flag
     
-    async def rewrite_intro(self, title, author, book_dir):
+    async def rewrite_intro(self, title, author, data_dir):
+        if self.flags['introduction'] is True:
+            print(f"introduction for {title} already exists")
+            return True
+        
         print(f"rewrite intro for {title}")
+
+        ext = self.exts['reference']
+        fileRef = os.path.join(data_dir, f'{title}{ext}')
+        if self.flags['reference'] is False or not os.path.exists(fileRef):
+            print(f"no reference to rewrite intro for {title}")
+            return False
+        
         tmpl = self.prompter.tasks['intro_rewrite']
+        with open(fileRef, 'r', encoding='utf-8') as f:
+            refData = f.read()
+
         if self.flags.get('bookInfo') is True:
             ext = self.exts['bookInfo']
-            with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
+            with open(os.path.join(data_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
                 abook = json.load(f)
         else:
             abook = {}
         bookInfo = json.dumps(abook, ensure_ascii=False, indent=4)
 
-        ext = self.exts['official']
-        filePath = os.path.join(book_dir, f'{title}{ext}')
-        if os.path.exists(filePath):
-            with open(filePath, 'r', encoding='utf-8') as f:
-                oguide = f.read()
-        else:
-            print(f"Failed to load {title}{ext} in rewrite_intro.")
-            return False
-        
-        query = tmpl.format(book_info=bookInfo, intro_txt=oguide)
-        
-        asw = await self.llm.ask_llm(query, '')
+        query = tmpl.format(book_info=bookInfo, intro_txt=refData)
         ext = self.exts['introduction']
-        self.dp.save_txt(os.path.join(book_dir, f'{title}{ext}'), asw)
-
-        return True
+        tryCount = 0
+        flag = False
+        # 如失败尝试3次
+        while tryCount < 3:
+            asw = await self.llm.ask_llm(query, '')
+            tryCount += 1
+            if len(asw) > 0 and 'err_llm:' not in asw:
+                flag = True
+                break
+        
+        if flag is False:
+            print(f"Failed to generate introduction for {title}")
+        else:
+            self.dp.save_txt(os.path.join(data_dir, f'{title}{ext}'), asw)
+        return flag
     
     # B站视频旁白
     async def gen_voiceover(self, title, author, book_dir, total_word=1800):
         
-        if self.flags['videoStructure'] is False or self.flags['introduction'] is False:
-            print(f"Failed to generate voicevoer for {title}")
+        total_word = self.voice_word
+
+        if self.flags['videoDesign'] is False or self.flags['introduction'] is False:
+            print(f"no videoDesign or introduction to gen voicevoer for {title}")
             return False
         
         tmpl = self.prompter.tasks['b_voiceover']
-        ext = self.exts['videoStructure']
+        ext = self.exts['videoDesign']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
             vid = json.load(f)
         vid.pop('overall_style', None)
         item = vid['cover_image']
         item.pop('color_scheme', None)
         total_minutes = sum([i['duration'] for i in vid['video_structure']])
-        
+        print(f"total_minutes: {total_minutes}, config: {self.duration}")
+
         for item in vid['video_structure']:
             item.pop('thumbnail_concept', None)
             item.pop('music_style', None)
@@ -210,74 +259,89 @@ class BookSummary:
         return True
         
     # 基于文字版intro+bookinfo 生成视频结构
-    async def gen_videoStructure(self, title, book_dir, minutes=5):
-        print(f"gen_videoStructure for {title}")
-
-        tmpl = self.prompter.tasks['visual_designer']
-        if self.flags.get('bookInfo') is True:
-            ext = self.exts['bookInfo']
-            with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
-                abook = json.load(f)
-        else:
-            abook = {}
-        bookInfo = json.dumps(abook, ensure_ascii=False, indent=4)
-
-        if self.flags['introduction'] is False:
-            print('no introduction to gen videoStructure for {title}')
-            return False
+    async def gen_videoDesign(self, title, data_dir):
+        print(f"gen_videoDesign for {title}")
+        if self.flags['videoDesign'] is True:
+            print(f"videoDesign for {title} already exists")
+            return True
         
         ext = self.exts['introduction']
-        with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
-            intro_txt = f.read()
+        introFile = os.path.join(data_dir, f'{title}{ext}')
+        ext = self.exts['bookInfo']
+        binfoFile = os.path.join(data_dir, f'{title}{ext}')
+        if self.flags['introduction'] is False:
+            print(f"no introduction to gen videoDesign for {title}")
+            return False
+        if self.flags['bookInfo'] is False:
+            print(f"no bookInfo to gen videoDesign for {title}")
+            return False
         
-        query = tmpl.format(minutes=minutes, std_txt=intro_txt, book_info=bookInfo)
-        asw = await self.llm.ask_llm(query, '')
-        result = self.ans_extr.output_extr('visual_designer', asw)
-        if result['status'] == 'failed':
+        tmpl = self.prompter.tasks['visual_designer']
+        with open(binfoFile, 'r', encoding='utf-8') as f:
+            abook = json.load(f)
+        bookInfo = json.dumps(abook, ensure_ascii=False, indent=4)
+        with open(introFile, 'r', encoding='utf-8') as f:
+            intro_txt = f.read()
+        query = tmpl.format(minutes=self.duration, std_txt=intro_txt, book_info=bookInfo)
+
+        ext = self.exts['videoDesign']
+        tryCount = 0
+        flag = False
+        # 尝试3次生成视频结构
+        while tryCount < 3:
+            asw = await self.llm.ask_llm(query, '')
+            result = self.ans_extr.output_extr('visual_designer', asw)
+            tryCount += 1
+            if result['status'] == 'succ':
+                flag = True
+                break
+        if flag is False:
             print(f"Failed to generate video structure for {title}")
             return False
         result = result['msg']
-        ext = self.exts['videoStructure']
-        self.dp.save_json(os.path.join(book_dir, f'{title}{ext}'), result)
+        self.dp.save_json(os.path.join(data_dir, f'{title}{ext}'), result)
         return True
     
     async def gen_visualDesc(self, title, book_dir):
         print(f"gen_visualDesc for {title}")
-        if self.flags['videoStructure'] is False:
-            print(f"failed becaused of missing videoStructure")
+        if self.flags['visualDesc'] is True:
+            print(f"visualDesc for {title} already exists")
+            return True
+        
+        if self.flags['videoDesign'] is False:
+            print(f"failed becaused of missing videoDesign")
             return False
         
         tmpl = self.prompter.tasks['visual_desc2']
-        ext = self.exts['videoStructure']
+        ext = self.exts['videoDesign']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
             vid = json.load(f)
         secs = vid['video_structure']
         overall_style = vid['overall_style']
         allDesc = []
-        for indx, sec in enumerate(secs):
+        indx, tryCount = 0, 0
+        while indx < len(secs) and tryCount < 3:
+            sec = secs[indx]
             print(f"sec: {sec['segment']}")
-            wight = 5
-            if indx == 0:
-                wight = 6
-            elif indx == len(secs)-1:
-                wight = 4
-            count = sec['duration']*wight
+            count = int(sec['duration']*self.img_count)
             sec['overall_style'] = overall_style
             sec.pop('music_style', None)
             vidInfo = json.dumps(sec, ensure_ascii=False, indent=4)
             query = tmpl.format(vid_stru=vidInfo, count=count)
-            with open('temp_query.txt', 'w', encoding='utf-8') as f:
-                f.write(query)
+            # with open('temp_query.txt', 'w', encoding='utf-8') as f:
+            #     f.write(query)
             asw = await self.llm.ask_llm(query, '')
             result = self.ans_extr.output_extr('visual_desc2', asw)
             if result['status'] == 'failed':
                 print(f"Failed to generate visual desc for {sec['segment']}")
                 print(f"asw: {asw}")
-                return False
+                tryCount += 1
+                continue
             
             result = result['msg']
             shots = [{'section': sec['segment'], **shot} for shot in result['shots']]
             allDesc.extend(shots)
+            indx += 1
 
         for i, item in enumerate(allDesc):
             item['shot_number'] = i+1
@@ -297,9 +361,10 @@ class BookSummary:
         asw = await self.llm.ask_llm(query, '')
         result = self.ans_extr.output_extr('reused_image', asw)
         if result['status'] == 'failed':
-            print(f"Failed to generate video structure for {title}")
-            return False
-        result = result['msg']
+            result['reused_images'] = []
+            print(f"Failed to group reused images for {title}")
+        else:
+            result = result['msg']
         
         for group in result['reused_images']:
             reused = group['shots']
@@ -322,7 +387,15 @@ class BookSummary:
         ext = self.exts['visualDesc']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
             vid = json.load(f)
-        for item in vid['shots']:
+        
+        item = vid['shots'][0]
+        if 'img_prompt' in item:
+            print(f"img_prompt for {title} already exists")
+            return True
+        
+        indx, tryCount = 0, 0
+        while indx < len(vid['shots']) and tryCount < 3:
+            item = vid['shots'][indx]
             print(f"gen image prompt for shot: {item['shot_number']}")
             stFrame = item['static_frame']
             sfInfo = json.dumps(stFrame, ensure_ascii=False, indent=4)
@@ -330,13 +403,20 @@ class BookSummary:
             asw = await self.llm.ask_llm(query, '')
             result = self.ans_extr.output_extr('img_prompt', asw)
             if result['status'] == 'failed':
-                print(f"Failed to generate image prompt for {title}")
-                return False
+                tryCount += 1
+                print(f"Failed to generate image prompt for {item['shot_number']}")
+                continue
             item['img_prompt'] = result['msg']
-            
+            indx += 1
+
+        if indx < len(vid['shots']):
+            print(f"Failed to generate image prompt for {title}")
+            return False
+        # 生成的图片提示词   
         ext = self.exts['visualDesc']
         self.dp.save_json(os.path.join(book_dir, f'{title}{ext}'), vid)
         return True
+    
     # 翻译为中文，并保存为pdf
     async def pdf_output(self, title, book_dir):
         print(f"output PDF document for {title}")

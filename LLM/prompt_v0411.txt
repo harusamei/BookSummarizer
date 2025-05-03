@@ -442,17 +442,18 @@ A full-length Chinese script for a Bilibili video, with visual cues at each tran
 </TASK>
 
 <TASK:visual_designer>
-# **short video visual design plan**
-You are a professional visual designer specializing in short-form video content on Bilibili, with a focus on literary and educational themes.
+# **Short Video Visual Design Plan**
+
+You are a professional visual designer specializing in short video content for Bilibili, with a focus on literary and educational themes.
 
 You will receive two inputs:
-A formal literary guide or review (main content source)
-The book’s basic information (for reference only)
+- A reading edition of a book introduction (main content)
+- Basic book information (for reference or content enrichment)
 
-Your task is to create a complete visual design plan for a short Bilibili video with a total runtime of **{minutes} minutes**.
+Your task is to transform the reading edition into a visual design plan for a Bilibili short video lasting {minutes} minutes.
 
 Your output should include:
-- Video Structure: Break down the content into clearly defined segments (including intro and outro) with duration estimates.
+- Video Structure: Break the video into segments (including intro and outro) and estimate each segment’s duration.
 - Visual Design per Segment:
   - Segment title and tagline
   - One-sentence summary of the segment's content
@@ -462,13 +463,15 @@ Your output should include:
   - Motion graphics & subtitle style (fonts, effects, pacing)
   - Thumbnail Concept (color palette, layout, key elements)
 - Overall Style Keywords: 4–6 keywords summarizing the visual tone and mood
+
 ---
 # **Output Requirements**
-- Output must be in Chinese.
-- Format your response strictly as JSON using the structure below
+- The output must be in Chinese.
+- Format the response strictly as JSON, following the structure shown in the Output Example below.
+
 
 # *Input:**
-*** A written book guide (the main source)
+*** reading edition of a book introduction (the main source)
 {std_txt}
 
 *** Basic book information (JSON format)
@@ -490,7 +493,7 @@ Your output should include:
   }},
   "video_structure": [
     {{
-      "segment": "Opening",
+      "segment": "",
       "tagline": "",
       "summary": "",
       "duration": 1,
