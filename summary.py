@@ -5,6 +5,7 @@ import os
 import asyncio
 import json
 import pandas as pd
+import math
 import copy
 from LLM.prompt_loader1 import Prompt_generator
 from LLM.llm_agent import LLMAgent
@@ -17,12 +18,11 @@ sys.path.insert(0, os.getcwd().lower())
 
 config = {
     'language': 'Chinese',
-    'duration': 5,              # 视频时长
-    'img_count': 5,             # 每秒生成的图片数量
-    'voice_word': 250*5,        # 旁白字数, 每分钟250字
-    'txt_word': 500*5,          # 文字版字数
+    'duration': 5,              # 视频minutes
+    'img_count': 10,             # 每分钟生成的图片数量
+    'voice_speed': 300,        # 旁白字数, 每分钟250字
+    'txt_speed': 500          # 文字版字数
 }
-
 
 class BookSummary:
     def __init__(self):
@@ -34,13 +34,13 @@ class BookSummary:
         self.pdf_saver = PDFSaver()
         self.lang = config['language']  # 语言
         self.duration = config['duration']  # 视频时长
-        self.voice_word = config['voice_word']  # 旁白字数
-        self.img_count = config['img_count']  # 每秒生成的图片数量
+        self.voice_word = int(config['voice_speed'] * config['duration'])  # 旁白字数
+        self.img_count = config['img_count']  # 图片数量per minute
         # 文件使用的扩展名
         self.exts = {
             'bookInfo': '.json',
             'introduction': '_std.md',      # 文字版导言
-            'voiceover': '_bv.md',          # B站视频旁白
+            'voiceover': '_bv.json',          # B站视频旁白
             'visualDesc': '_desc.json',     # 图像，视频描述
             'reference': '_ref.txt',        # 书籍序言或专业导读
             'videoDesign': '_vid.json'      # 视频结构
@@ -100,13 +100,15 @@ class BookSummary:
 
             print('part 2: generate visual documents')
             self.flags['videoDesign'] = await self.gen_videoDesign(title, data_dir)
-            self.flags['visualDesc'] = await self.gen_visualDesc(title, data_dir)
-            self.flags['imgPrompt'] = await self.gen_imgPrompt(title, data_dir)
 
             print('part 3: generate voiceover script')
             self.flags['voiceover'] = await self.gen_voiceover(title, author, data_dir)
 
-            # await self.pdf_output(title, bname_dir)
+            print('part 4: generate image prompt')
+            self.flags['visualDesc'] = await self.gen_visualDesc(title, data_dir)
+            self.flags['imgPrompt'] = await self.gen_imgPrompt(title, data_dir)
+            await self.gen_imgPrompt2(title, data_dir)
+            #await self.pdf_output(title, bname_dir)
             break
     
     # 输出json 存放在store_dir
@@ -217,10 +219,14 @@ class BookSummary:
         return flag
     
     # B站视频旁白
-    async def gen_voiceover(self, title, author, book_dir, total_word=1800):
+    async def gen_voiceover(self, title, author, book_dir):
+        
+        print(f"gen voiceover for {title}")
+        if self.flags['voiceover'] is True:
+            print(f"voiceover for {title} already exists")
+            return True
         
         total_word = self.voice_word
-
         if self.flags['videoDesign'] is False or self.flags['introduction'] is False:
             print(f"no videoDesign or introduction to gen voicevoer for {title}")
             return False
@@ -228,34 +234,36 @@ class BookSummary:
         tmpl = self.prompter.tasks['b_voiceover']
         ext = self.exts['videoDesign']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
-            vid = json.load(f)
-        vid.pop('overall_style', None)
-        item = vid['cover_image']
-        item.pop('color_scheme', None)
+            vid = json.load(f)        
         total_minutes = sum([i['duration'] for i in vid['video_structure']])
         print(f"total_minutes: {total_minutes}, config: {self.duration}")
-
+        segments = []
         for item in vid['video_structure']:
-            item.pop('thumbnail_concept', None)
-            item.pop('music_style', None)
-            item.pop('visual_style', None)
-            item.pop('motion_graphics', None)
-            item.pop('scene_description', None)
+            segment = {'segment_title': item['segment_title'],
+                       'tagline': item['tagline'],
+                       'summary': item['summary']
+            }
             duration = item['duration']
-            wcount = int(duration / total_minutes*total_word/50)*50
-            item['word_count'] = wcount
-            item.pop('duration', None)
-        vid_stru = json.dumps(vid, ensure_ascii=False, indent=4)
+            wcount = math.ceil(duration / total_minutes*total_word/50)*50
+            segment['word_count'] = wcount
+            segments.append(segment)
+        tDict = {'segments': segments}
+        vid_stru = json.dumps(tDict, ensure_ascii=False, indent=4)
+
         ext = self.exts['introduction']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
             intro_txt = f.read()
-        query = tmpl.format(word_count=total_word,vid_stru=vid_stru, std_txt=intro_txt)
+        query = tmpl.format(vid_stru=vid_stru, std_txt=intro_txt)
         with open('temp_query.txt', 'w', encoding='utf-8') as f:
             f.write(query)
         asw = await self.llm.ask_llm(query, '')
-
+        result = self.ans_extr.output_extr('b_voiceover', asw)
+        if result['status'] == 'failed':
+            print(f"Failed to generate voiceover for {title}")
+            return False
+        result = result['msg']
         ext = self.exts['voiceover']
-        self.dp.save_txt(os.path.join(book_dir, f'{title}{ext}'), asw)
+        self.dp.save_json(os.path.join(book_dir, f'{title}{ext}'), result)
         return True
         
     # 基于文字版intro+bookinfo 生成视频结构
@@ -311,23 +319,29 @@ class BookSummary:
         if self.flags['videoDesign'] is False:
             print(f"failed becaused of missing videoDesign")
             return False
+        if self.flags['voiceover'] is False:
+            print(f"failed becaused of missing voiceover")
+            return False
         
         tmpl = self.prompter.tasks['visual_desc2']
         ext = self.exts['videoDesign']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
             vid = json.load(f)
+        ext = self.exts['voiceover']
+        with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
+            voiceover = json.load(f)
+        voiceover = voiceover['voiceover']
         secs = vid['video_structure']
-        overall_style = vid['overall_style']
         allDesc = []
         indx, tryCount = 0, 0
         while indx < len(secs) and tryCount < 3:
             sec = secs[indx]
-            print(f"sec: {sec['segment']}")
+            sec['voiceover'] = voiceover[indx]['text']
+            print(f"segment: {sec['segment_title']}")
             count = int(sec['duration']*self.img_count)
-            sec['overall_style'] = overall_style
-            sec.pop('music_style', None)
+            art_style = sec['art_style']
             vidInfo = json.dumps(sec, ensure_ascii=False, indent=4)
-            query = tmpl.format(vid_stru=vidInfo, count=count)
+            query = tmpl.format(segment_stru=vidInfo, count=count, art_style=art_style)
             # with open('temp_query.txt', 'w', encoding='utf-8') as f:
             #     f.write(query)
             asw = await self.llm.ask_llm(query, '')
@@ -339,7 +353,9 @@ class BookSummary:
                 continue
             
             result = result['msg']
-            shots = [{'section': sec['segment'], **shot} for shot in result['shots']]
+            shots = [{  'segment_number': sec['segment_number'], 
+                        'segment_title': sec['segment_title'], 
+                        **shot} for shot in result['shots']]
             allDesc.extend(shots)
             indx += 1
 
@@ -347,7 +363,7 @@ class BookSummary:
             item['shot_number'] = i+1
         newDesc = copy.deepcopy(allDesc)
         for item in newDesc:
-            item.pop('section', None)
+            item.pop('segment_title', None)
             item.pop('motion_graphic', None)
         
         print(f"group_reusedImage for {title}")
@@ -408,11 +424,54 @@ class BookSummary:
                 continue
             item['img_prompt'] = result['msg']
             indx += 1
-
+            
         if indx < len(vid['shots']):
             print(f"Failed to generate image prompt for {title}")
             return False
         # 生成的图片提示词   
+        ext = self.exts['visualDesc']
+        self.dp.save_json(os.path.join(book_dir, f'{title}{ext}'), vid)
+        return True
+    
+    # from key scenes to generate image prompt
+    async def gen_imgPrompt2(self, title, book_dir):
+        print(f"gen_imgPrompt for key scenes of {title}")
+        if self.flags['visualDesc'] is False:
+            print(f"failed becaused of missing visualDesc")
+            return False
+        if self.flags['bookInfo'] is False:
+            print(f"failed becaused of missing brief_intro")
+            return False
+        
+        tmpl = self.prompter.tasks['iprompt_completion']
+        ext = self.exts['visualDesc']
+        with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
+            vid = json.load(f)
+        vid['shots'] = list(filter(lambda x: x.get('segment_title') != 'key scenes', vid['shots']))
+        ext = self.exts['bookInfo']
+        with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
+            abook = json.load(f)
+        shot_number = len(vid['shots'])
+        keyScenes = abook['scenes']
+        tShots = []
+        for scene in keyScenes:
+            sent = scene['slugline']
+            print(f"key scene: {sent}")
+            query = tmpl.format(sentence=sent)
+            asw = await self.llm.ask_llm(query, '')
+            result = self.ans_extr.output_extr('iprompt_completion', asw)
+            if result['status'] == 'failed':
+                print(f"Failed to generate image prompt for {scene['scene_title']}")
+                continue
+            scene['img_prompt'] = result['msg']
+            tDict = {'shot_number': shot_number,
+                    'img_prompt':result['msg'],
+                    'segment_title': 'key scenes'
+            }
+            tShots.append(tDict)
+            shot_number += 1
+        vid['shots'].extend(tShots)
+
         ext = self.exts['visualDesc']
         self.dp.save_json(os.path.join(book_dir, f'{title}{ext}'), vid)
         return True
@@ -439,7 +498,7 @@ class BookSummary:
         if len(tSec) > 0:
             secs.append(tSec)
         secs = secs[1:]
-        ext = self.exts['videoStructure']
+        ext = self.exts['videoDesign']
         with open(os.path.join(book_dir, f'data/{title}{ext}'), 'r', encoding='utf-8') as f:
             vid = json.load(f)
         

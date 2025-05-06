@@ -13,7 +13,7 @@ D_MAX_PROMPT_LEN = 4000        # default max length of prompt
 
 # 项目数据存放位置及SCHEMA文件名
 S_TRAINING_PATH = 'training'
-S_PROMPT_FILE = 'LLM/prompt_v0411.txt'         # prompt file name
+S_PROMPT_FILE = 'LLM/prompt_v0506.txt'         # prompt file name
 
 if __name__ == '__main__':
     all_vars = locals()

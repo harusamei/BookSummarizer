@@ -42,6 +42,10 @@ async def askDall(payload, retries=2, delay=2):
          res = conn.getresponse()
          data = res.read()
          response_json = json.loads(data.decode("utf-8"))
+         if 'data' not in response_json or len(response_json['data']) == 0:
+            print(f"Error: No image data returned. Response: {response_json}")
+            return None
+         
          image_url = response_json['data'][0]['url']
          return image_url
       except http.client.RemoteDisconnected as e:

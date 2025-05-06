@@ -63,7 +63,7 @@ You are a seasoned literary analyst who has read all classic literary works. You
 - Crucial to the plot, character development, or thematic expression—such as major conflicts, emotional turning points, or decisive actions.
 
 ### Requirements:
-- Include at least 12 key scenes.
+- Include at least **12** key scenes.
 - Strictly follow the JSON format of output.
 - Use {language} for the output.
 
@@ -86,7 +86,7 @@ Author: {author}
       "slugline": "",   
       "description": ""   
     }},
-    ... // At least 10 scenes
+    // ... Additional scenes
   ]
 }}
 
@@ -288,32 +288,32 @@ Based on the input shot content, group visually identical or highly similar shot
 ```
 </TASK>
 
-// Generate Bilibili Video Voiceover Script Based on Video Structure and Written Book Guide
+// Generate Bilibili Literary Video Voiceover Script Based on Video Structure and Book Guide
 <TASK: b_voiceover>
-# **Bilibili Literary Video Voiceover Generator**
+# **Bilibili Literary Voiceover Generator**
 
-Write a Chinese-language voiceover script based on a written book guide and a provided video structure. The total length should be approximately {word_count} characters.
+You are a Bilibili content creator specializing in literary videos. Your task is to generate voiceover scripts based on a written book guide and a provided video structure.
 
-Follow the structure closely:
-- Each section in the video structure must have a matching voiceover segment.
-- Match both length and pacing to the specified word count for each segment.
+## **Requirements**
+- Provide one voiceover segment per section of the video structure.
+- Match the specified word count and pacing for each segment.
 - Ensure smooth, natural transitions between segments.
-- Include the title and narration for each segment.
+- Use the book guide for content inspiration—do not copy it directly.
+- Output must be in Chinese.
 
 ---
 
 ### **Tone & Style**
-- Friendly, conversational—like recommending a favorite book to a friend.
-- Avoid dry summaries; create rhythm and emotional variation.
-- Use storytelling techniques: questions, metaphors, narrative buildup, emotional turns.
+- Friendly and conversational, like recommending a favorite book to a friend.
+- Avoid dry summaries; use rhythm and emotional variation.
+- Apply storytelling techniques: questions, metaphors, narrative flow, emotional turns.
 
 ---
 
 ### **Format**
-
-- No bullet points or lists
-- Use paragraph breaks for smoother narration and editing
-- Output in Markdown format (no code blocks)
+- No bullet points or lists.
+- Use paragraph breaks for clarity and editing ease.
+- Follow the JSON output format strictly as shown below.
 
 ---
 
@@ -328,8 +328,20 @@ Follow the structure closely:
 ---
 
 ### Output
-   A full Markdown-formatted Chinese voiceover script, with section titles and matching narration. 
-
+```json
+{{
+  "voiceover": [
+    {{
+      "segment_number": 1,
+      "title": "",  // Title of the segment
+      "text": ""    // Voiceover text for the segment
+    }},
+    {{
+      // ... Additional segments
+    }}
+  ]
+}}
+```
 </TASK>
 
 // 将专业的书评改写为导读
@@ -454,15 +466,11 @@ Your task is to transform the reading edition into a visual design plan for a Bi
 
 Your output should include:
 - Video Structure: Break the video into segments (including intro and outro) and estimate each segment’s duration.
+- Overall Style Keywords: 4–6 keywords summarizing the visual tone and mood
 - Visual Design per Segment:
   - Segment title and tagline
   - One-sentence summary of the segment's content
-  - Recommended visual style (e.g., Gothic, minimalist, hand-drawn, vintage cinematic)
-  - Scene description (characters, locations, symbols, transitions)
-  - Music style (classical, electronic, folk, etc.)
-  - Motion graphics & subtitle style (fonts, effects, pacing)
-  - Thumbnail Concept (color palette, layout, key elements)
-- Overall Style Keywords: 4–6 keywords summarizing the visual tone and mood
+  - Recommended artistic style (e.g., Dark fantasy art style, Medieval oil painting style, 80s retro, etc.)
 
 ---
 # **Output Requirements**
@@ -485,23 +493,20 @@ Your output should include:
   "overall_style": [
     // 4–6 keywords summarizing the visual tone and mood
   ],
-  "cover_image": {{
-    "title": "",
-    "subtitle": "",
-    "composition"："",
-    "color_scheme"：""
+  "thumbnail": {{
+    "title": "",  // Title of the video
+    "subtitle": "",  // Subtitle or tagline
+    "color_scheme": "",  // Color scheme for the thumbnail
+    "composition": ""  // Composition details for the thumbnail
   }},
   "video_structure": [
     {{
-      "segment": "",
+      "segment_number": 1,
+      "segment_title": "",  // Title of the segment
       "tagline": "",
       "summary": "",
-      "duration": 1,
-      "visual_style": "",
-      "scene_description": "",
-      "music_style": "",
-      "motion_graphics": "",
-      "thumbnail_concept": ""
+      "duration": 1,        // Duration in minutes
+      "art_style": ""       // Recommended artistic style
     }},
     {{
       // ... Additional segments
@@ -513,38 +518,36 @@ Your output should include:
 <TASK: visual_desc2>
 
 # Visual Design + Motion Graphics
+You are a video creator on Bilibili, focusing on short videos about literature and education. Your task is to design visual concepts and motion graphics to enhance the narrative and emotional impact of the following video script.
 
-Based on the video script below, create {count} visual concepts. Each concept must include:
+Based on the script below, create {count} visual concepts. Each concept must include:
 - A static frame
 - A matching motion graphic (loop or short animation)
-Emphasize philosophical and symbolic imagery. Use contrasts between cold and warm tones to express internal emotional conflict. Each concept should reflect the script’s mood, character symbolism, and narrative structure.
 
-For each of the {count} concepts, provide:
+## Design Guidelines
+- Visuals must align with the narration in the voiceover.
+- Visual style must match the overall {art_style}.
+- Static Frame should include:
+    - Scene: What is happening in the image?
+    - Background: The setting and atmosphere of the scene
+    - Character: Appearance, clothing, expression, and posture of the character(s)
+    - Visual Style: Visual style used
+    - Artist Reference: Artists whose work inspires the style
 
-1. **Title** – A short, evocative name for the concept in **Chinese**.
-
-2. **Static Frame**
-   - **Scene Description**: What is happening in the image?
-   - **Composition**: Camera angle, subject placement, visual focus
-   - **Color Palette**: Highlight symbolic contrasts (e.g., cold vs. warm)
-   - **Symbolic Elements**: Metaphors, hidden meanings, visual references
-
-3. **Motion Graphic**
-   - **Motion Concept**: Loop or key animation idea
-   - **Duration**: 3–8 seconds
-   - **Motion Elements**: What moves? (e.g., flickering light, slow breathing, burning paper)
-   - **Mood/Emotion**: What feeling should the motion enhance? (e.g., dread, seduction, despair)
-
+- Motion Graphics should include:
+   - Motion Concept: Loop or key animation idea
+   - Duration: 3–8 seconds
+   - Motion Elements: What moves? (e.g., flickering light, slow breathing, burning paper)
 ---
 
 ## Output Requirements
-
+- Output must be in Chinese.
 - Strictly follow the specified JSON format provided below
 
 ### Input:
 *** Video Segment Script (JSON format) ***
 ```json
-{vid_stru}
+{segment_stru}
 ```
 
 ### Output Example:
@@ -553,18 +556,17 @@ For each of the {count} concepts, provide:
   "shots": [
     {{
       "shot_number": 1,
-      "shot_title": "The Solitude of Prayer",
       "static_frame": {{
-        "scene_description": "Margarete kneels at a church pew, hands clasped, eyes closed in prayer. Behind her rise tall stained glass windows.",
-        "composition": "Top-down shot with Margarete centered in the frame; the surrounding pews and floor create symmetrical lines.",
-        "color_palette": "Dominated by cool tones, with blue and purple light streaming through the windows.",
-        "symbolic_elements": "The stained glass symbolizes faith and redemption."
+        "scene": "",
+        "background": "",
+        "character": "",
+        "visual_style": ""，
+        "artist": ""
       }},
       "motion_graphic": {{
-        "motion_concept": "The stained glass light shifts gradually, with cool tones warming slowly.",
-        "duration": 3, 
-        "motion_elements": "Gradual light transitions; Margarete’s shadow gently flickers.",
-        "mood_emotion": "A mix of loneliness and hope, with a quiet, tragic undertone."
+        "motion_concept": "",
+        "duration": 3, // Duration in seconds
+        "motion_elements": ""
       }}
     }},
     {{
@@ -579,22 +581,22 @@ For each of the {count} concepts, provide:
 // Generate a DALL·E-compatible prompt based on the static frame description.
 
 <TASK: img_prompt>
-# TXT2Image Prompt Generator
+# AI Image Prompt Generator
 
-## Goal:
-- Create a detailed DALL·E-style image prompt in both English and Chinese.
-- Determine whether the image is "generic" (lacking specific entities) or "specific" (featuring particular people, places, or symbols).
+## Task Description:
+- Based on the provided static_frame information, generate a DALL·E-style AI image prompt in both English and Chinese.
+- Label the input as either "generic" (no specific people, places, or symbols) or "specific" (contains distinct individuals, locations, or symbols).
 
 ## Instructions:
-- Include time period, scale, and scene composition.
-- Describe the objects and settings in detail. Avoid abstract concepts and translate them into visual elements.
-  - Refine the material details to avoid a plastic texture.
-  - Use specific adjectives to describe the scene.
-  - Include symbolic props or background elements to add visual depth and cultural context.
-- Define lighting and color tone consistently.
-- Mention any relevant art style or artist.
-- Convey the desired mood or atmosphere clearly.
-- Eliminate redundancy and ensure clarity in each sentence.
+- Enrich the scene with missing details such as location, atmosphere, lighting, character status, actions, and visual style.
+- Describe all objects and settings clearly and concretely — avoid abstract ideas; translate them into visual elements.
+- Refine materials to avoid unnatural or plastic-like textures.
+- Use specific adjectives to enhance clarity and richness.
+- Add symbolic props or meaningful background elements for visual depth and cultural context.
+- Define lighting and color palette consistently.
+- wide shot, cinematic frame, 16:9 aspect ratio.
+- ultra high resolution. 
+- Remove redundant phrases and keep each sentence clear and direct.
 
 ## Input:
 **Static Frame Description (JSON)**
@@ -607,6 +609,29 @@ For each of the {count} concepts, provide:
   "prompt_en": "",  // DALL·E prompt in English
   "prompt_cn": "",  // DALL·E prompt in Chinese
   "image_type": ""  // "generic" or "specific"
+}}
+```
+</TASK>
+
+// complete the image prompt from one shot sentence
+<TASK: iprompt_completion>
+# AI Image Prompt Completion
+
+## Task Description:
+- Take a short or vague scene description and expand it with details like location, atmosphere, lighting, character status, actions, and style.
+- Generate a vivid and complete image prompt suitable for DALL·E.
+- wide shot, cinematic frame, 16:9 aspect ratio.
+- ultra high resolution. 
+
+##Input:
+** Scene Description **
+{sentence}
+
+## Output:
+```json
+{{
+    "prompt_en": "",  // DALL·E prompt in English
+    "prompt_cn": ""  // DALL·E prompt in Chinese
 }}
 ```
 </TASK>

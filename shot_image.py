@@ -6,6 +6,7 @@ import asyncio
 import re
 import time
 import json
+import random
 sys.path.insert(0, os.getcwd().lower())
 from LLM.dall_image import txt2image, save_image_with_prompt
 
@@ -15,7 +16,7 @@ class ShotImage:
       self.exts = {
          'visualDesc': '_desc.json'     # 图像，视频描述
         }
-      self.failed = []
+      self.genMode = "random"             # 生成模式，all所有，random 随机5个，completion
 
    async def gen_batch(self, xls_file):
       books = pd.read_excel(xls_file, sheet_name=0)
@@ -28,51 +29,66 @@ class ShotImage:
          if title.startswith('《'):
                title = title[1:-1]
          print(f'title: {title}')
-         sub_dir = os.path.join(book_dir, title)
-         if not os.path.exists(sub_dir):
-            print(f"Directory {sub_dir} does not exist.")
+         bname_dir = os.path.join(book_dir, title)
+         if not os.path.exists(bname_dir):
+            print(f"Directory {bname_dir} does not exist.")
             continue
          ext = self.exts['visualDesc']
-         filePath = os.path.join(sub_dir, f'{title}{ext}')
+         filePath = os.path.join(f'{bname_dir}/data', f'{title}{ext}')
          if not os.path.exists(filePath):
             print(f"File {filePath} does not exist.")
             continue
-         with open(os.path.join(sub_dir, f'{title}{ext}'), 'r',encoding='utf-8') as f:
-               shots = json.load(f)
+         with open(filePath, 'r',encoding='utf-8') as f:
+            shots = json.load(f)
          shots = shots['shots']
-         imgPath = os.path.join(sub_dir, 'images')
+         imgPath = os.path.join(bname_dir, 'images')
          if not os.path.exists(imgPath):
             os.makedirs(imgPath)
          start_time = time.time()
+         shots = self.get_shots(shots, imgPath)
          for i, shot in enumerate(shots):
-            if 'reused' in shot:
+            if 'img_prompt' not in shot:
+               print(f"img_prompt not found in shot {i}")
                continue
-            if 'image_description' not in shot:
-               print(f"image_description not found in {shot}")
-               continue
-            img_desc = shot['image_description']
-            section = shot['section']
-            shot_title = shot['shot_title']
-            print(f'{section} {shot_title} {shot["shot_number"]}')
-            print(f'finished: {i+1}/{len(shots)}')
+            if i >= 5:
+               break
+            img_desc = shot['img_prompt']['prompt_en']
+            section = shot['segment_title']
+            print(f'{section}, finished: {i+1}/{len(shots)}')
             outFile = f"shot_{shot['shot_number']}"
             fileName = os.path.join(imgPath, outFile)
             flag = await self.gen_image(img_desc, fileName)
             if flag is False:
                print(f"Failed to generate image for shot_{shot['shot_number']}")
                tDict = {'shot_number': shot['shot_number'], 'image_description': img_desc}
-               self.failed.append(tDict)
-            
          print(f"Time taken for {title}: {time.time() - start_time:.2f} seconds")
          break
-      if len(self.failed) > 0:
-         with open(os.path.join(sub_dir, 'failed.json'), 'w', encoding='utf-8') as f:
-            json.dump(self.failed, f, ensure_ascii=False, indent=4)
+      
       return
    
+   def get_shots(self, shots, imgPath):
+      if self.genMode == 'all':
+         return shots
+      elif self.genMode == 'random':
+         random_shots = random.sample(shots, min(5, len(shots)))  # 确保 shots 少于 5 个时不会报错
+         return random_shots
+      # 补齐没有图片的镜头
+      keep_shots = []
+      for i, shot in enumerate(shots):
+         filePath = os.path.join(imgPath, f"shot_{shot['shot_number']}.png")
+         if os.path.exists(filePath):
+            continue
+         keep_shots.append(shot)
+      return keep_shots
+
+
    # outFile只有文件名，没有扩展名
    async def gen_image(self, img_desc, baseFile):
       img_url =await txt2image(img_desc)
+      if img_url is None:
+         print(f"Failed to generate image for {img_desc}")
+         return False
+
       ext = '.png'
       outFile = baseFile+ext
       count = 1
