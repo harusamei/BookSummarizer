@@ -1,6 +1,6 @@
 ///////////////////////////////////////
 // prompts for book analysis tasks
-// 内容包括：书名，作者，写作背景，情节分析，人物及性格，主题与思想，写作风格，文学价值，经典场景，经典语录等
+// 内容包括：书名，作者，背景，情节,场景
 ///////////////////////////////////////
 
 <TASK: brief_intro>
@@ -63,7 +63,7 @@ You are a seasoned literary analyst who has read all classic literary works. You
 - Crucial to the plot, character development, or thematic expression—such as major conflicts, emotional turning points, or decisive actions.
 
 ### Requirements:
-- Include at least **12** key scenes.
+- Include at least **24** key scenes.
 - Strictly follow the JSON format of output.
 - Use {language} for the output.
 
@@ -100,10 +100,10 @@ You are a literary analyst with deep expertise in classic literature. Based on t
 Your writing should unfold in smooth, well-structured paragraphs that guide the reader naturally through the historical and cultural context, the plot, character development, major themes, writing style, and critical reception. Avoid using bullet points or numbered lists. Instead, present the content in a flowing narrative style that feels insightful and enjoyable to read.
 
 ### Requirements:
-- Write in Chinese
+- Write in {lang}
 - Style should be polished, logical, and reader-friendly—suitable for literary reviews, longform essays, or blog articles
 - The generation process must preserve the integrity of the plot, with the summary of characters and key story arcs accounting for about 40% of the overall content.
-- The text should be at least 2000 Chinese characters
+- The text should be at least {word_count} words long.
 - Use Markdown format for structure and readability
 
 ### Input:
@@ -114,146 +114,6 @@ Your writing should unfold in smooth, well-structured paragraphs that guide the 
 ### Output:
   Please format your response in Markdown.
 
-</TASK>
-
-// video structure for Bilibili book introduction
-<TASK:video_structure1>
-# **Book Introduction Video Structure**
-
-You are a Bilibili creator who specializes in producing book introduction videos. You will be provided with two types of input:
-- A written book guide (the main source)
-- Basic book information (for reference only)
-
-Your task is to adapt the written book guide into a complete 10-minute video structure, which will serve as the basis for a video that introduces the book to viewers in an engaging visual format.
-
-### Deliverables
-Design a full video structure including:
-- Duration for each section (in minutes)
-- Section title
-- Key content points
-- Visual style prompts
-- Visuals
-- Music suggestions
-    
-### Guidelines
-- The total video duration should be approximately 10 minutes
-- Visual style prompts should match the book’s tone and themes, and follow a descriptive format, e.g.: Vintage cinematic style, sepia tones, 1930s European interior, warm lighting, nostalgic atmosphere
-- Ensure smooth pacing and logical transitions between sections
-- Output must strictly follow the JSON format of the output example below
-
---- 
-
-### Input
-- Written Book Guide:
-{std_txt}
-
-- Basic Book Information (in JSON format)
-```json
-{book_info}
-```
-
-### Output Example
-```json
-{{
-  "video_structure": [
-    {{
-      "section": "",          // section title 
-      "duration": 1,          // duration in minutes
-      "tagline": "",          // tagline for the section
-      "content": "",          // main content in the section
-      "visual_style": "",     // visual style prompts
-      "music_suggestion": "",
-      "visuals": ""           // visuals for the section      
-    }},
-    {{
-        // ... Additional sections
-    }}
-  ]
-}}
-
-```json
-
-</TASK>
-
-<TASK: visual_desc1>
-
-# Static Image and Video Prompt Generation
-
-You are a professional visual designer specializing in short video aesthetics for Bilibili. Given a video segment, your task is to design shots and generate precise visual prompts. These prompts will be used to create high-quality static images and dynamic video sequences.
-
-## Task Description
-- Design {count} shots for input segment.
-- Write a detailed static image description for each shot.
-- Provide a motion prompt to animate each image..
-
-## Guidelines
-- Follow the overall_style and the `visual_style` of current segment.
-- Every shot must include both image and motion prompts.
-- Apply consistent descriptions if visually similar to maintain coherence.
-
-## Static Image Description Rules
-
-- For use with text-to-image tools like DALL·E.
-- Neutral, high-resolution composition (no exaggerated angles or action).
-- Include:
-  - Visual_style
-  - Scene layout
-  - Character appearance and clothing
-  - Facial expression and body posture
-  - Background elements
-  - Lighting and color tone
-
-- **Avoid**:
-  - Real-life actors or hosts
-  - Text-only slides (e.g., title cards)
-  - Subtitles or text overlays
-  - Promotional elements
-
-- Use clear directives like:
-  - "Generate an image of a character standing..."
-  - "The background shows..."
-  - "The character wears..."
-
-## Motion Prompt Rules
-
-- Designed for tools like Runway Gen-2.
-- Include:
-  - Camera movement: dolly-in, slow pan, orbit shot
-  - Motion type and speed: cinematic slow-mo, fast-paced
-  - Ambient motion: wind, fog, drifting clouds
-  - Mood or time changes: dawn, dusk, emotional shifts
-  - Character actions: turning, walking, reaching
-  - Effects: flickering light, moving fabric, hair swaying
-
----
-
-## Output Requirements
-
-- Output must be in Chinese.
-- Strictly follow the JSON format provided below
-
-### Input:
-*** Video Structure Script (JSON format) ***
-```json
-{vid_stru}
-```
-
-### Output:
-```json
-{{
-  "shots": [
-    {{
-      "shot_number": 1,
-      "shot_title": "",  // Title or description of the shot
-      "image_description": "",  // Description for text-to-image generation
-      "motion_prompt": ""   // prompt to animate static image
-    }},
-    {{
-      // ... Continue for each shot
-    }}
-  ]
-}}
-```
 </TASK>
 
 <TASK: reused_image>
@@ -296,10 +156,10 @@ You are a Bilibili content creator specializing in literary videos. Your task is
 
 ## **Requirements**
 - Provide one voiceover segment per section of the video structure.
-- Match the specified word count and pacing for each segment.
+- Ensure that each segment meets the word count specified in its "word_count" field.
 - Ensure smooth, natural transitions between segments.
 - Use the book guide for content inspiration—do not copy it directly.
-- Output must be in Chinese.
+- Output must be in {lang}.
 
 ---
 
@@ -347,41 +207,42 @@ You are a Bilibili content creator specializing in literary videos. Your task is
 // 将专业的书评改写为导读
 <TASK: intro_rewrite>
 # **Book Introduction Rewrite Task**
-You are a content writer for a literature-focused mobile app. Your job is to rewrite formal book reviews into engaging, easy-to-read book guides for general readers.
+You are a content writer for a mobile app focused on literature. Your task is to rewrite formal book introductions into engaging, easy-to-read guides in **{lang}** for general readers.
 
-You will be given two types of input:  
-1. A **formal literary review or introduction** (this is your main source).  
-2. The book’s **basic information** (use this as supporting reference).
+##　You will receive two types of input:
+1. A formal literary review or introduction (this is your primary source).
+2. The book’s basic information (to be used for reference and context).
 
-Your task is to create a **book guide of around 2,000 Chinese characters**, introducing the book’s background, core themes, main scenes, and reading value. The goal is to make the book feel approachable and appealing to everyday readers.
+Your goal is to create a book guide of approximately {word_count} words. This guide should introduce the book’s background, plot summary, core themes, and overall reading value. It should help readers feel more connected to the book and eager to explore it.
 
-This guide should be optimized for mobile reading.
+## Rewriting Guidelines:
+Do not copy or closely paraphrase long sections from the original review. Instead, reorganize and rewrite the content in a reader-friendly, accessible format.
 
-### Requirements
+## Requirements
+- Tone & Style:
+Write in a warm, conversational tone, as if recommending a great book to a friend. Avoid academic or overly formal language.
 
-**Tone & Style:**  
-Write in a warm, conversational tone—like you're recommending a great book to a friend. Avoid academic or overly formal language.
+- Length & Structure:
+Keep the entire article to approximately {word_count} characters. 
+Use short, clear paragraphs for easy mobile reading.
+Include a title and subheadings, and ensure smooth transitions between sections.
+Summarize the plot clearly, focusing on main characters and key scenes.
+Do not use bullet points or numbered lists.
 
-**Length & Structure:**  
-Keep the entire article within ~2,000 characters. Use short, clear paragraphs that are easy to browse.  
-Include a title and subheadings. Use smooth transitions between sections.  
-Keep the plot complete when introducing the story, but avoid excessive detail. Focus on the main characters and key scenes.
-Do **not** use bullet points or numbered lists.
-
-**Rewriting Notes:**  
-Do not copy or paraphrase long passages from the original review. Instead, reorganize the content into a more accessible and reader-friendly format.
+- output must be in {lang}.
 
 ### Input
-*** Formal review or introduction text
+*** Formal review or introduction text (the main source)
 {intro_txt}
 
-*** Basic book information (JSON format)
+*** Basic book information (for reference)
 ```json
 {book_info}
 ```
 
 ### Output
-Please format your response in Markdown.
+... // Please format your response in Markdown.
+
 </TASK>
 
 <TASK: translation>
@@ -402,54 +263,6 @@ Translate the following {lang} content into Simplified Chinese.
 
 ### Output:
 ...// Directly output the translated content, preserving the original format.
-
-</TASK>
-
-// 废弃
-<TASK: b_video_rewrite>
-# **Bilibili Book Recommendation Video Script Rewrite (Enhance Storytelling, Pacing, and Visual Flow)**
-
-You are a content creator on Bilibili who makes book recommendation videos. Your task is to rewrite a formal book review into a lively, story-driven script that feels personal and emotionally engaging. The goal is to present the book in a way that draws viewers into its world and makes them want to read it.
-
----
-
-## **Tone and Style Guidelines**
-- Keep the tone friendly and conversational, as if you're recommending a favorite book to a friend
-- Avoid listing points—use smooth, emotional storytelling instead
-- Use rhetorical questions, metaphors, mood shifts, and dramatic build-ups to keep the flow dynamic
-- Add simple visual direction cues at natural transitions, such as:
-    - Scene illustrations that match the mood
-    - Music changes (e.g. soft piano for reflection, suspenseful beats for tension)
-    - Text highlights or bold subtitles for impact
-    - Book cover close-ups, key quotes, or user comments for depth
-    - Ambient effects like slow motion, color filters, or audio cues (paper flipping, silence, rain, etc.)
-- No fixed template—just ensure each cue enhances the emotional flow
-
----
-
-## **Structure and Content Balance**
-- Storytelling should take up at least 40% of the script—make it vivid and immersive
-- Character intros should be brief, only covering essentials
-- Themes and background should be blended naturally into the narrative
-- End with a touching or thoughtful conclusion that encourages engagement
-
----
-
-## **Formatting Requirements**
-- Script must be in Chinese, suitable for voice-over
-- Avoid list formats—use natural paragraph breaks for smooth dubbing and editing
-- Minimum length: 3000 characters
-- Use Markdown, and include one visual cue line per paragraph transition, like 【画面切换：XXX】
-
----
-
-## **Input:**
-{book_info}
-
----
-
-## **Output:**
-A full-length Chinese script for a Bilibili video, with visual cues at each transition.
 
 </TASK>
 
@@ -496,8 +309,8 @@ Your output should include:
   "thumbnail": {{
     "title": "",  // Title of the video
     "subtitle": "",  // Subtitle or tagline
-    "color_scheme": "",  // Color scheme for the thumbnail
-    "composition": ""  // Composition details for the thumbnail
+    "art_style": "",  
+    "composition": ""  // Composition details
   }},
   "video_structure": [
     {{
@@ -520,24 +333,20 @@ Your output should include:
 # Visual Design + Motion Graphics
 You are a video creator on Bilibili, focusing on short videos about literature and education. Your task is to design visual concepts and motion graphics to enhance the narrative and emotional impact of the following video script.
 
-Based on the script below, create {count} visual concepts. Each concept must include:
+Based on the script below, create at least **{count}** visual concepts. Each concept must include:
 - A static frame
-- A matching motion graphic (loop or short animation)
+- A brief description of a motion scene
 
 ## Design Guidelines
 - Visuals must align with the narration in the voiceover.
-- Visual style must match the overall {art_style}.
+- Visual style must match the overall "{art_style}".
 - Static Frame should include:
     - Scene: What is happening in the image?
     - Background: The setting and atmosphere of the scene
     - Character: Appearance, clothing, expression, and posture of the character(s)
-    - Visual Style: Visual style used
-    - Artist Reference: Artists whose work inspires the style
+    - Mood & Tone: e.g. warm, nostalgic, dark, etc.
 
-- Motion Graphics should include:
-   - Motion Concept: Loop or key animation idea
-   - Duration: 3–8 seconds
-   - Motion Elements: What moves? (e.g., flickering light, slow breathing, burning paper)
+- Motion Graphics should include motion concept and motion elements
 ---
 
 ## Output Requirements
@@ -555,19 +364,14 @@ Based on the script below, create {count} visual concepts. Each concept must inc
 {{
   "shots": [
     {{
-      "shot_number": 1,
       "static_frame": {{
         "scene": "",
         "background": "",
         "character": "",
-        "visual_style": ""，
-        "artist": ""
+        "mood": "",
+        "visual_style": ""
       }},
-      "motion_graphic": {{
-        "motion_concept": "",
-        "duration": 3, // Duration in seconds
-        "motion_elements": ""
-      }}
+      "motion_graphic": ""  // Description of the motion graphic concept
     }},
     {{
       ... // Continue for each shot
@@ -584,22 +388,24 @@ Based on the script below, create {count} visual concepts. Each concept must inc
 # AI Image Prompt Generator
 
 ## Task Description:
-- Based on the provided static_frame information, generate a DALL·E-style AI image prompt in both English and Chinese.
-- Label the input as either "generic" (no specific people, places, or symbols) or "specific" (contains distinct individuals, locations, or symbols).
+- Based on the provided static frame, generate a DALL·E-style image prompt in both English and Chinese.
+- Label the input as either "generic" (no specific people, places, or symbols) or "specific" (contains identifiable individuals, locations, or symbols).
 
-## Instructions:
-- Enrich the scene with missing details such as location, atmosphere, lighting, character status, actions, and visual style.
-- Describe all objects and settings clearly and concretely — avoid abstract ideas; translate them into visual elements.
-- Refine materials to avoid unnatural or plastic-like textures.
-- Use specific adjectives to enhance clarity and richness.
-- Add symbolic props or meaningful background elements for visual depth and cultural context.
-- Define lighting and color palette consistently.
-- wide shot, cinematic frame, 16:9 aspect ratio.
-- ultra high resolution. 
-- Remove redundant phrases and keep each sentence clear and direct.
+## Prompt Guidelines:
+- Add missing details such as location, mood, lighting, character state, action, and visual style.
+- Describe all objects and settings clearly and concretely; translate abstract ideas into visual elements.
+- Specify a clear art style, e.g., Realism, Romanticism, Gothic, Baroque, Minimalism, Surrealism, Impressionism, Expressionism, Cubism, Futurism, Dadaism, Pop Art, Conceptual Art.
+- Specify the visual medium, e.g., 3D rendering, digital painting, watercolor, oil painting, sketch, collage.
+- Define lighting and color palette clearly and consistently.
+- Refine surface textures; avoid artificial or plastic-like appearances.
+- Add symbolic props or culturally meaningful elements for visual depth.
+- Use **wide shot** and 16:9 cinematic framing.
+- Keep the prompt concise, direct, and information-rich; remove redundancy.
+
+-----
 
 ## Input:
-**Static Frame Description (JSON)**
+**Static Frame (JSON)**
 ```json
 {static_frame}
 ```
@@ -621,7 +427,6 @@ Based on the script below, create {count} visual concepts. Each concept must inc
 - Take a short or vague scene description and expand it with details like location, atmosphere, lighting, character status, actions, and style.
 - Generate a vivid and complete image prompt suitable for DALL·E.
 - wide shot, cinematic frame, 16:9 aspect ratio.
-- ultra high resolution. 
 
 ##Input:
 ** Scene Description **

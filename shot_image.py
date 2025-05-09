@@ -16,7 +16,7 @@ class ShotImage:
       self.exts = {
          'visualDesc': '_desc.json'     # 图像，视频描述
         }
-      self.genMode = "random"             # 生成模式，all所有，random 随机5个，completion
+      self.genMode = "all"             # 生成模式，all所有，random 随机5个，completion, [:5],[1,2,4]
 
    async def gen_batch(self, xls_file):
       books = pd.read_excel(xls_file, sheet_name=0)
@@ -50,9 +50,8 @@ class ShotImage:
             if 'img_prompt' not in shot:
                print(f"img_prompt not found in shot {i}")
                continue
-            if i >= 5:
-               break
-            img_desc = shot['img_prompt']['prompt_en']
+           
+            img_desc = shot['img_prompt']['prompt_cn']
             section = shot['segment_title']
             print(f'{section}, finished: {i+1}/{len(shots)}')
             outFile = f"shot_{shot['shot_number']}"
@@ -72,6 +71,16 @@ class ShotImage:
       elif self.genMode == 'random':
          random_shots = random.sample(shots, min(5, len(shots)))  # 确保 shots 少于 5 个时不会报错
          return random_shots
+      # 数组下标法
+      elif '[' in self.genMode and ',' not in self.genMode:
+         tShots = eval(f'shots{self.genMode}')
+         return tShots
+      elif '[' in self.genMode and ',' in self.genMode:
+         tShots = []
+         mode = self.genMode.replace('[','').replace(']','').replace(' ','')
+         for i in mode.split(','):
+            tShots.append(eval(f'shots[{i}]'))
+         return tShots
       # 补齐没有图片的镜头
       keep_shots = []
       for i, shot in enumerate(shots):

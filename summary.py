@@ -17,12 +17,13 @@ from reportlab.lib.styles import ParagraphStyle
 sys.path.insert(0, os.getcwd().lower())
 
 config = {
-    'language': 'Chinese',
-    'duration': 5,              # 视频minutes
-    'img_count': 10,             # 每分钟生成的图片数量
-    'voice_speed': 300,        # 旁白字数, 每分钟250字
-    'txt_speed': 500          # 文字版字数
+    'language': 'Chinese',  # 语言
+    'duration': 5,            # 视频minutes
+    'img_count': 10,          # 图片数量, 每分钟
+    'voice_speed': 300,       # 旁白字数, 每分钟
+    'txt_word': 2500          # 文字版total word
 }
+
 
 class BookSummary:
     def __init__(self):
@@ -35,6 +36,7 @@ class BookSummary:
         self.lang = config['language']  # 语言
         self.duration = config['duration']  # 视频时长
         self.voice_word = int(config['voice_speed'] * config['duration'])  # 旁白字数
+        self.txt_word = config['txt_word']  # 文字版字数
         self.img_count = config['img_count']  # 图片数量per minute
         # 文件使用的扩展名
         self.exts = {
@@ -87,7 +89,10 @@ class BookSummary:
         book_dir = os.path.dirname(os.path.abspath(xls_file))
         
         for _, row in books.iterrows():
-            
+            status = row['status']
+            if status.lower() != 'ready':       # 只处理状态为ready的书籍
+                continue
+
             title, bname_dir = self.init(row, book_dir)
             data_dir = os.path.join(bname_dir, 'data')
             author = row['author'].lower()
@@ -100,7 +105,7 @@ class BookSummary:
 
             print('part 2: generate visual documents')
             self.flags['videoDesign'] = await self.gen_videoDesign(title, data_dir)
-
+            
             print('part 3: generate voiceover script')
             self.flags['voiceover'] = await self.gen_voiceover(title, author, data_dir)
 
@@ -140,11 +145,9 @@ class BookSummary:
         return True
 
     async def gen_introduction(self, title, author, data_dir):
-        # 已经存在文字版导读
         if self.flags['introduction'] is True:
             print(f"introduction for {title} already exists")
             return True
-        
         print(f"gen introduction for {title}")
         abook = {}
         tmpl = self.prompter.tasks['book_introduction']
@@ -157,7 +160,7 @@ class BookSummary:
                 abook = json.load(f)
         
         jsonStr = json.dumps(abook, ensure_ascii=False, indent=4)
-        query = tmpl.format(book_info=jsonStr)
+        query = tmpl.format(book_info=jsonStr,word_count=self.txt_word, lang=self.lang)
 
         ext = self.exts['introduction']
         tryCount = 0
@@ -198,9 +201,10 @@ class BookSummary:
                 abook = json.load(f)
         else:
             abook = {}
+        abook.pop('similar_recommendations', None)
         bookInfo = json.dumps(abook, ensure_ascii=False, indent=4)
-
-        query = tmpl.format(book_info=bookInfo, intro_txt=refData)
+        query = tmpl.format(book_info=bookInfo, intro_txt=refData,
+                            word_count=self.txt_word,lang=self.lang)
         ext = self.exts['introduction']
         tryCount = 0
         flag = False
@@ -253,7 +257,7 @@ class BookSummary:
         ext = self.exts['introduction']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
             intro_txt = f.read()
-        query = tmpl.format(vid_stru=vid_stru, std_txt=intro_txt)
+        query = tmpl.format(vid_stru=vid_stru, std_txt=intro_txt,lang=self.lang)
         with open('temp_query.txt', 'w', encoding='utf-8') as f:
             f.write(query)
         asw = await self.llm.ask_llm(query, '')
@@ -262,10 +266,15 @@ class BookSummary:
             print(f"Failed to generate voiceover for {title}")
             return False
         result = result['msg']
+        for i, item in enumerate(result['voiceover']):
+            item['tagline'] = segments[i]['tagline']
+            item['remainder'] = segments[i]['word_count'] - len(item['text'])
+         
         ext = self.exts['voiceover']
         self.dp.save_json(os.path.join(book_dir, f'{title}{ext}'), result)
         return True
-        
+
+    
     # 基于文字版intro+bookinfo 生成视频结构
     async def gen_videoDesign(self, title, data_dir):
         print(f"gen_videoDesign for {title}")
@@ -337,13 +346,13 @@ class BookSummary:
         while indx < len(secs) and tryCount < 3:
             sec = secs[indx]
             sec['voiceover'] = voiceover[indx]['text']
-            print(f"segment: {sec['segment_title']}")
             count = int(sec['duration']*self.img_count)
             art_style = sec['art_style']
+            print(f"segment: {sec['segment_title']}, count: {count}, art_style: {art_style}")
             vidInfo = json.dumps(sec, ensure_ascii=False, indent=4)
             query = tmpl.format(segment_stru=vidInfo, count=count, art_style=art_style)
-            # with open('temp_query.txt', 'w', encoding='utf-8') as f:
-            #     f.write(query)
+            with open('temp_query.txt', 'w', encoding='utf-8') as f:
+                f.write(query)
             asw = await self.llm.ask_llm(query, '')
             result = self.ans_extr.output_extr('visual_desc2', asw)
             if result['status'] == 'failed':
@@ -433,7 +442,7 @@ class BookSummary:
         self.dp.save_json(os.path.join(book_dir, f'{title}{ext}'), vid)
         return True
     
-    # from key scenes to generate image prompt
+    # image prompt of thumbnail and key scenes
     async def gen_imgPrompt2(self, title, book_dir):
         print(f"gen_imgPrompt for key scenes of {title}")
         if self.flags['visualDesc'] is False:
@@ -443,17 +452,43 @@ class BookSummary:
             print(f"failed becaused of missing brief_intro")
             return False
         
-        tmpl = self.prompter.tasks['iprompt_completion']
         ext = self.exts['visualDesc']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
             vid = json.load(f)
-        vid['shots'] = list(filter(lambda x: x.get('segment_title') != 'key scenes', vid['shots']))
+        
+        vid['shots'] = list(
+            filter(
+                lambda x: x.get('segment_title') not in ['key scenes','thumbnail'],
+                vid['shots']
+            )
+        )
         ext = self.exts['bookInfo']
         with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
             abook = json.load(f)
+
+        tmpl = self.prompter.tasks['iprompt_completion']
         shot_number = len(vid['shots'])
-        keyScenes = abook['scenes']
         tShots = []
+
+        ext = self.exts['videoDesign']
+        with open(os.path.join(book_dir, f'{title}{ext}'), 'r', encoding='utf-8') as f:
+            vdesign = json.load(f)
+        thumbnail = vdesign['thumbnail']
+        sent = f'book cover, title: {title}, composition:{thumbnail["composition"]}, art style: {thumbnail["art_style"]}'
+        query = tmpl.format(sentence=sent)
+        asw = await self.llm.ask_llm(query, '')
+        result = self.ans_extr.output_extr('iprompt_completion', asw)
+        if result['status'] == 'failed':
+            print(f"Failed to generate image prompt for book cover")
+        else:
+            tDict = {'shot_number': shot_number,
+                    'img_prompt':result['msg'],
+                    'segment_title': 'thumbnail'
+            }
+            tShots.append(tDict)
+            shot_number += 1
+            
+        keyScenes = abook['scenes']
         for scene in keyScenes:
             sent = scene['slugline']
             print(f"key scene: {sent}")
